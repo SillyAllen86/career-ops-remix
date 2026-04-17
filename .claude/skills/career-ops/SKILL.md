@@ -82,14 +82,13 @@ Read `modes/{mode}.md`
 Applies to: `tracker`, `deep`, `training`, `project`, `patterns`, `followup`
 
 ### Modes delegated to subagent:
-For `scan`, `apply` (with Playwright), and `pipeline` (3+ URLs): launch as Agent with the content of `_shared.md` + `modes/{mode}.md` injected into the subagent prompt.
+For `scan`, `apply` (with browser automation), and `pipeline` (3+ URLs): launch as a subagent/subtask with the content of `_shared.md` + `modes/{mode}.md` injected into the prompt.
 
-```
-Agent(
-  subagent_type="general-purpose",
-  prompt="[content of modes/_shared.md]\n\n[content of modes/{mode}.md]\n\n[invocation-specific data]",
-  description="career-ops {mode}"
-)
-```
+Claude can use its native Agent mechanism; other runtimes should use the equivalent subagent/delegation primitive.
+
+Required prompt payload:
+- content of `modes/_shared.md`
+- content of `modes/{mode}.md`
+- invocation-specific data
 
 Execute the instructions from the loaded mode file.

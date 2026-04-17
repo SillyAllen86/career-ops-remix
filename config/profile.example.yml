@@ -69,3 +69,9 @@ location:
   visa_status: "No sponsorship needed"
   # For remote roles outside your country:
   # onsite_availability: "1 week/month in any city"
+
+
+execution:
+  provider: "codex"   # codex | openai | claude
+  # model: "codex-mini-latest"
+  # Used by batch tooling and setup docs. Changing this does not alter the core workflow.

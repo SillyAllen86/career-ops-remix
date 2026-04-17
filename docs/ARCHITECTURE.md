@@ -1,110 +1,115 @@
 # Architecture
 
-## System Overview
+## System overview
 
 ```
-                    ┌─────────────────────────────────┐
-                    │         Claude Code Agent        │
-                    │   (reads CLAUDE.md + modes/*.md) │
-                    └──────────┬──────────────────────┘
+                ┌──────────────────────────────────────┐
+                │  Canonical instructions              │
+                │  CAREER_OPS_AGENT.md                │
+                └───────────────┬──────────────────────┘
+                                │
+              ┌─────────────────┴─────────────────┐
+              │                                   │
+      ┌───────▼────────┐                  ┌───────▼────────┐
+      │ AGENTS.md      │                  │ CLAUDE.md      │
+      │ Codex/OpenAI   │                  │ Claude wrapper │
+      └───────┬────────┘                  └───────┬────────┘
+              │                                   │
+              └───────────────┬───────────────────┘
+                              │
+                    ┌─────────▼─────────┐
+                    │ Shared modes      │
+                    │ modes/*.md        │
+                    └───────┬───────────┘
+                            │
+        ┌───────────────────┼────────────────────┐
+        │                   │                    │
+ ┌──────▼──────┐    ┌───────▼───────┐    ┌──────▼────────────┐
+ │ Single eval │    │ Portal scan   │    │ Batch orchestrator │
+ │ auto-pipe   │    │ scan.md       │    │ batch-runner.sh    │
+ └──────┬──────┘    └───────┬───────┘    └────────┬──────────┘
+        │                   │                     │
+        │            ┌──────▼──────┐       ┌──────▼──────────┐
+        │            │ pipeline.md │       │ scripts/run-    │
+        │            │ URL inbox   │       │ agent.mjs       │
+        │            └─────────────┘       └──────┬──────────┘
+        │                                          │
+        └──────────────────────┬───────────────────┘
                                │
-            ┌──────────────────┼──────────────────────┐
-            │                  │                       │
-     ┌──────▼──────┐   ┌──────▼──────┐   ┌───────────▼────────┐
-     │ Single Eval  │   │ Portal Scan │   │   Batch Process    │
-     │ (auto-pipe)  │   │  (scan.md)  │   │   (batch-runner)   │
-     └──────┬──────┘   └──────┬──────┘   └───────────┬────────┘
-            │                  │                       │
-            │           ┌──────▼──────┐          ┌────▼─────┐
-            │           │ pipeline.md │          │ N workers│
-            │           │ (URL inbox) │          │ (claude -p)
-            │           └─────────────┘          └────┬─────┘
-            │                                          │
-     ┌──────▼──────────────────────────────────────────▼──────┐
-     │                    Output Pipeline                      │
-     │  ┌──────────┐  ┌────────────┐  ┌───────────────────┐  │
-     │  │ Report.md│  │  PDF (HTML  │  │ Tracker TSV       │  │
-     │  │ (A-F eval)│  │  → Puppeteer)│  │ (merge-tracker)  │  │
-     │  └──────────┘  └────────────┘  └───────────────────┘  │
-     └────────────────────────────────────────────────────────┘
+                ┌──────────────▼─────────────────────────────┐
+                │ Output pipeline                            │
+                │ report .md + PDF + tracker TSV + merge     │
+                └──────────────┬─────────────────────────────┘
                                │
-                    ┌──────────▼──────────┐
-                    │  data/applications.md │
-                    │  (canonical tracker)  │
-                    └──────────────────────┘
+                      ┌────────▼────────┐
+                      │ applications.md │
+                      │ canonical tracker│
+                      └─────────────────┘
 ```
 
-## Evaluation Flow (Single Offer)
+## What changed in the refactor
 
-1. **Input**: User pastes JD text or URL
-2. **Extract**: Playwright/WebFetch extracts JD from URL
-3. **Classify**: Detect archetype (1 of 6 types)
-4. **Evaluate**: 6 blocks (A-F):
-   - A: Role summary
-   - B: CV match (gaps + mitigation)
-   - C: Level strategy
-   - D: Comp research (WebSearch)
-   - E: CV personalization plan
-   - F: Interview prep (STAR stories)
-5. **Score**: Weighted average across 10 dimensions (1-5)
-6. **Report**: Save as `reports/{num}-{company}-{date}.md`
-7. **PDF**: Generate ATS-optimized CV (`generate-pdf.mjs`)
-8. **Track**: Write TSV to `batch/tracker-additions/`, auto-merged
+The domain workflow did not change. The refactor only changed the execution layer:
 
-## Batch Processing
+- Shared agent rules moved to `CAREER_OPS_AGENT.md`
+- `AGENTS.md` became the primary Codex/OpenAI wrapper
+- `CLAUDE.md` became a thin Claude wrapper
+- Batch execution now goes through `scripts/run-agent.mjs`
+- `CAREER_OPS_PROVIDER` selects `codex`, `openai`, or `claude`
 
-The batch system processes multiple offers in parallel:
+This keeps business logic, files, report generation, tracker flow, PDF generation, and scanning behavior intact.
 
-```
-batch-input.tsv    →  batch-runner.sh  →  N × claude -p workers
-(id, url, source)     (orchestrator)       (self-contained prompt)
-                           │
-                    batch-state.tsv
-                    (tracks progress)
-```
+## Evaluation flow (single offer)
 
-Each worker is a headless Claude instance (`claude -p`) that receives the full `batch-prompt.md` as context. Workers produce:
-- Report .md
-- PDF
-- Tracker TSV line
+1. Input: user pastes JD text or URL
+2. Extract: browser automation / page fetch extracts the JD
+3. Classify: detect archetype
+4. Evaluate: blocks A-G
+5. Score: weighted 1-5 global score
+6. Report: save `reports/{num}-{company}-{date}.md`
+7. PDF: generate ATS-optimized CV via `generate-pdf.mjs`
+8. Track: write TSV to `batch/tracker-additions/` and merge
 
-The orchestrator manages parallelism, state, retries, and resume.
-
-## Data Flow
+## Batch processing
 
 ```
-cv.md                    →  Evaluation context
-article-digest.md        →  Proof points for matching
-config/profile.yml       →  Candidate identity
-portals.yml              →  Scanner configuration
-templates/states.yml     →  Canonical status values
-templates/cv-template.html → PDF generation template
+batch-input.tsv -> batch-runner.sh -> scripts/run-agent.mjs -> provider runtime
+(id, url, ...)     orchestration       adapter                codex/openai/claude
 ```
 
-## File Naming Conventions
+The batch runner still handles:
+- pending/completed/failed state in `batch-state.tsv`
+- resumability
+- retry counts
+- per-offer logs
+- report numbering
+- tracker merge + verification at the end
 
-- Reports: `{###}-{company-slug}-{YYYY-MM-DD}.md` (3-digit zero-padded)
+`scripts/run-agent.mjs` is intentionally thin. It selects the runtime and forwards the resolved prompt plus task instruction. It does not introduce a second workflow.
+
+## Data flow
+
+```
+cv.md                       -> evaluation context
+article-digest.md           -> proof points
+config/profile.yml          -> candidate identity + targeting
+portals.yml                 -> scanner configuration
+templates/states.yml        -> canonical statuses
+templates/cv-template.html  -> PDF generation template
+```
+
+## File naming conventions
+
+- Reports: `{###}-{company-slug}-{YYYY-MM-DD}.md`
 - PDFs: `cv-candidate-{company-slug}-{YYYY-MM-DD}.pdf`
 - Tracker TSVs: `batch/tracker-additions/{id}.tsv`
 
-## Pipeline Integrity
+These contracts were preserved.
 
-Scripts maintain data consistency:
+## Integrity scripts
 
-| Script | Purpose |
-|--------|---------|
-| `merge-tracker.mjs` | Merges batch TSV additions into applications.md |
-| `verify-pipeline.mjs` | Health check: statuses, duplicates, links |
-| `dedup-tracker.mjs` | Removes duplicate entries by company+role |
-| `normalize-statuses.mjs` | Maps status aliases to canonical values |
-| `cv-sync-check.mjs` | Validates setup consistency |
-
-## Dashboard TUI
-
-The `dashboard/` directory contains a standalone Go TUI application that visualizes the pipeline:
-
-- Filter tabs: All, Evaluada, Aplicado, Entrevista, Top >=4, No Aplicar
-- Sort modes: Score, Date, Company, Status
-- Grouped/flat view
-- Lazy-loaded report previews
-- Inline status picker
+- `merge-tracker.mjs` — merge TSV additions into `data/applications.md`
+- `verify-pipeline.mjs` — health checks for duplicates, links, and statuses
+- `dedup-tracker.mjs` — remove duplicate tracker entries
+- `normalize-statuses.mjs` — normalize status aliases
+- `cv-sync-check.mjs` — config / CV consistency checks

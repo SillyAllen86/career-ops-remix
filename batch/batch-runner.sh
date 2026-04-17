@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# career-ops batch runner — standalone orchestrator for claude -p workers
-# Reads batch-input.tsv, delegates each offer to a claude -p worker,
+# career-ops batch runner — standalone orchestrator for provider-neutral workers
+# Reads batch-input.tsv, delegates each offer through scripts/run-agent.mjs,
 # tracks state in batch-state.tsv for resumability.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -28,11 +28,12 @@ RETRY_FAILED=false
 START_FROM=0
 MAX_RETRIES=2
 MIN_SCORE=0
+PROVIDER="${CAREER_OPS_PROVIDER:-codex}"
 
 usage() {
   cat <<'USAGE'
-career-ops batch runner — process job offers in batch via claude -p workers
-Uses your default Claude model (Claude Max subscription).
+career-ops batch runner — process job offers in batch via provider-neutral workers
+Defaults to CAREER_OPS_PROVIDER=codex (OpenAI/Codex-first). Use claude to keep the legacy Claude CLI path.
 
 Usage: batch-runner.sh [OPTIONS]
 
@@ -43,6 +44,7 @@ Options:
   --start-from N       Start from offer ID N (skip earlier IDs)
   --max-retries N      Max retry attempts per offer (default: 2)
   --min-score N        Skip PDF/tracker for offers scoring below N (default: 0 = off)
+  --provider NAME      Runtime provider: codex, openai, or claude
   -h, --help           Show this help
 
 Files:
@@ -64,6 +66,9 @@ Examples:
 
   # Process 2 at a time starting from ID 10
   ./batch-runner.sh --parallel 2 --start-from 10
+
+  # Force the legacy Claude runtime
+  ./batch-runner.sh --provider claude
 USAGE
 }
 
@@ -76,6 +81,7 @@ while [[ $# -gt 0 ]]; do
     --start-from) START_FROM="$2"; shift 2 ;;
     --max-retries) MAX_RETRIES="$2"; shift 2 ;;
     --min-score) MIN_SCORE="$2"; shift 2 ;;
+    --provider) PROVIDER="$2"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
     *) echo "Unknown option: $1"; usage; exit 1 ;;
   esac
@@ -119,10 +125,34 @@ check_prerequisites() {
     exit 1
   fi
 
-  if ! command -v claude &>/dev/null; then
-    echo "ERROR: 'claude' CLI not found in PATH."
+  if ! command -v node &>/dev/null; then
+    echo "ERROR: 'node' is required in PATH."
     exit 1
   fi
+
+  if [[ ! -f "$PROJECT_DIR/scripts/run-agent.mjs" ]]; then
+    echo "ERROR: $PROJECT_DIR/scripts/run-agent.mjs not found."
+    exit 1
+  fi
+
+  case "$PROVIDER" in
+    codex|openai)
+      if ! command -v codex &>/dev/null; then
+        echo "ERROR: provider '$PROVIDER' selected but 'codex' CLI not found in PATH."
+        exit 1
+      fi
+      ;;
+    claude)
+      if ! command -v claude &>/dev/null; then
+        echo "ERROR: provider 'claude' selected but 'claude' CLI not found in PATH."
+        exit 1
+      fi
+      ;;
+    *)
+      echo "ERROR: Unsupported provider '$PROVIDER'. Use codex, openai, or claude."
+      exit 1
+      ;;
+  esac
 
   mkdir -p "$LOGS_DIR" "$TRACKER_DIR" "$REPORTS_DIR"
 }
@@ -350,12 +380,13 @@ process_offer() {
     -e "s|{{ID}}|${esc_id}|g" \
     "$PROMPT_FILE" > "$resolved_prompt"
 
-  # Launch claude -p worker (uses default model from Claude Max subscription)
+  # Launch provider-neutral worker through scripts/run-agent.mjs
   local exit_code=0
-  claude -p \
-    --dangerously-skip-permissions \
-    --append-system-prompt-file "$resolved_prompt" \
-    "$prompt" \
+  node "$PROJECT_DIR/scripts/run-agent.mjs" \
+    --provider "$PROVIDER" \
+    --project-dir "$PROJECT_DIR" \
+    --system-prompt-file "$resolved_prompt" \
+    --prompt "$prompt" \
     > "$log_file" 2>&1 || exit_code=$?
 
   # Cleanup resolved prompt
@@ -461,7 +492,7 @@ main() {
   fi
 
   echo "=== career-ops batch runner ==="
-  echo "Parallel: $PARALLEL | Max retries: $MAX_RETRIES"
+  echo "Provider: $PROVIDER | Parallel: $PARALLEL | Max retries: $MAX_RETRIES"
   echo "Input: $total_input offers"
   echo ""
 

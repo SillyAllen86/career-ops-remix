@@ -1,0 +1,86 @@
+# Career-Ops Profile Configuration
+# Copy this file to config/profile.yml and fill in your details.
+# This is the single source of truth for your personal data across all modes.
+
+candidate:
+  full_name: "Pravin Sail"
+  email: "sail.a.pravin@gmail.com"
+  phone: "+49 171 9282295"
+  location: "Frankfurt am Main, Germany"
+  linkedin: "https://linkedin.com/in/pravins-profile"
+  portfolio_url: ""
+  github: "https://github.com/SillyAllen86"
+  twitter: ""
+  # (Optional) Canva resume design ID for visual CV generation via /career-ops pdf.
+  # Find it in your Canva design URL: https://www.canva.com/design/DAxxxxxxx/...
+  # The ID starts with "D" and is 11 characters long.
+  # canva_resume_design_id: "DAxxxxxxxxx"
+
+target_roles:
+  # Your North Star roles — what you're optimizing for
+  primary:
+    - "Life Sciences Digital Transformation Lead"
+    - "Regulated Systems / Solutions Architect"
+    - "AI-Enabled Workflow / Product Architect"
+  # Archetypes help the evaluation system score fit
+  archetypes:
+    - name: "Life Sciences Digital Transformation Lead"
+      level: "Lead"
+      fit: "primary"        # primary = dream role, secondary = good fit, adjacent = stretch
+    - name: "Regulated Systems / Solutions Architect"
+      level: "Lead/Senior"
+      fit: "secondary"
+    - name: "AI-Enabled Workflow / Product Architect"
+      level: "Senior/Lead"
+      fit: "secondary"
+    - name: "Technical Product / Platform Translation Lead"
+      level: "Senior/Lead"
+      fit: "adjacent"
+    - name: "Digital Compliance / Quality Transformation Lead"
+      level: "Senior/Lead"
+      fit: "adjacent"
+    - name: "Individualized Medicine Operations Architect"
+      level: "Senior/Lead"
+      fit: "adjacent"
+
+narrative:
+  # Your professional headline (1 line)
+  headline: "Digitalisation Lead in individualized medicine and regulated life sciences transformation, with AI-enabled workflow and product design depth"
+  # Your exit story — what makes you unique
+  exit_story: "13+ years across regulated life sciences, digital operating model design, and cross-functional transformation. I bridge business, science, quality, operations, and IT to design traceable, integration-first workflows and target-state systems. My differentiator is builder depth: alongside enterprise transformation work, I prototype AI-enabled knowledge, document, and workflow tools in Swift, TypeScript, and local-first architectures."
+  # Your top 3-5 superpowers
+  superpowers:
+    - "Regulated life sciences operating model and workflow design"
+    - "Business-to-IT translation across science, quality, operations, and enterprise teams"
+    - "Integration-first systems architecture across LES, LIMS, MES, SAP, and automation landscapes"
+    - "Traceability, exception handling, and evidence continuity in patient-specific workflows"
+    - "AI-enabled workflow and knowledge tool prototyping with practical product sense"
+  # Proof points — projects, articles, case studies with measurable impact
+  proof_points:
+    - name: "BioNTech individualized medicine digitalisation leadership"
+      url: ""
+      hero_metric: "Led target-state process, system interaction, traceability, and orchestration design across sample processing, genomics, manufacturing, quality, and enterprise functions"
+    - name: "Advanced Digitalisation for Personalized Cell Therapy"
+      url: ""
+      hero_metric: "Authored an integration-first paper on coordination, traceability, and scalable digital operations in personalized cell therapy"
+    - name: "InfoWeave-MemoryDB"
+      url: "https://github.com/SillyAllen86"
+      hero_metric: "Built local vector memory infrastructure with TypeScript, SQLite, local embeddings, and MCP-compatible design"
+  # Optional: dashboard/demo URL with credentials
+  # dashboard:
+  #   url: "https://janesmith.dev/demo"
+  #   password: "demo-2026"
+
+compensation:
+  target_range: "TBD"
+  currency: "EUR"
+  minimum: "TBD"
+  location_flexibility: "Frankfurt-based. Open to Germany/EU roles with remote or hybrid arrangements; travel/on-site cadence should match role needs."
+
+location:
+  country: "Germany"
+  city: "Frankfurt am Main"
+  timezone: "Europe/Berlin"
+  visa_status: "TBD"
+  # For remote roles outside your country:
+  onsite_availability: "Available for hybrid/on-site work in the Frankfurt area and planned travel for role-critical workshops, design sessions, or key delivery milestones"

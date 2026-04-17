@@ -37,3 +37,7 @@ bun.lock
 .claude/memory/
 career-dashboard
 package-lock.json
+
+# Local portal credentials
+secrets/
+profiles-*.txt

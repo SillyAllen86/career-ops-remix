@@ -8,18 +8,19 @@
 import { existsSync, mkdirSync, readdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { spawnSync } from 'child_process';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const projectRoot = __dirname;
+const selectedProvider = (process.env.CAREER_OPS_PROVIDER || 'codex').toLowerCase();
 
-// ANSI colors (only on TTY)
 const isTTY = process.stdout.isTTY;
 const green = (s) => isTTY ? `\x1b[32m${s}\x1b[0m` : s;
 const red = (s) => isTTY ? `\x1b[31m${s}\x1b[0m` : s;
 const dim = (s) => isTTY ? `\x1b[2m${s}\x1b[0m` : s;
 
 function checkNodeVersion() {
-  const major = parseInt(process.versions.node.split('.')[0]);
+  const major = parseInt(process.versions.node.split('.')[0], 10);
   if (major >= 18) {
     return { pass: true, label: `Node.js >= 18 (v${process.versions.node})` };
   }
@@ -48,24 +49,71 @@ async function checkPlaywright() {
     if (existsSync(execPath)) {
       return { pass: true, label: 'Playwright chromium installed' };
     }
+  } catch {}
+  return {
+    pass: false,
+    label: 'Playwright chromium not installed',
+    fix: 'Run: npx playwright install chromium',
+  };
+}
+
+function commandExists(command) {
+  const result = spawnSync('bash', ['-lc', `command -v ${command}`], { encoding: 'utf8' });
+  return result.status === 0;
+}
+
+function checkProviderSelection() {
+  const supported = ['codex', 'openai', 'claude'];
+  if (supported.includes(selectedProvider)) {
+    return { pass: true, label: `Provider selection valid (${selectedProvider})` };
+  }
+  return {
+    pass: false,
+    label: `Unsupported CAREER_OPS_PROVIDER (${selectedProvider})`,
+    fix: 'Set CAREER_OPS_PROVIDER to codex, openai, or claude',
+  };
+}
+
+function checkProviderRuntime() {
+  if (selectedProvider === 'claude') {
+    if (commandExists('claude')) {
+      return { pass: true, label: 'Claude CLI available for provider=claude' };
+    }
     return {
       pass: false,
-      label: 'Playwright chromium not installed',
-      fix: 'Run: npx playwright install chromium',
-    };
-  } catch {
-    return {
-      pass: false,
-      label: 'Playwright chromium not installed',
-      fix: 'Run: npx playwright install chromium',
+      label: 'Claude CLI not found for provider=claude',
+      fix: 'Install the Claude CLI or switch CAREER_OPS_PROVIDER=codex',
     };
   }
+
+  if (selectedProvider === 'codex' || selectedProvider === 'openai') {
+    if (commandExists('codex')) {
+      return { pass: true, label: `Codex CLI available for provider=${selectedProvider}` };
+    }
+    return {
+      pass: false,
+      label: `Codex CLI not found for provider=${selectedProvider}`,
+      fix: 'Install the Codex CLI or switch CAREER_OPS_PROVIDER=claude',
+    };
+  }
+
+  return { pass: false, label: 'Provider runtime check skipped because provider is invalid' };
+}
+
+function checkRunAgentAdapter() {
+  const adapter = join(projectRoot, 'scripts', 'run-agent.mjs');
+  if (existsSync(adapter)) {
+    return { pass: true, label: 'Provider-neutral runner present (scripts/run-agent.mjs)' };
+  }
+  return {
+    pass: false,
+    label: 'Provider-neutral runner missing',
+    fix: 'Expected scripts/run-agent.mjs to exist',
+  };
 }
 
 function checkCv() {
-  if (existsSync(join(projectRoot, 'cv.md'))) {
-    return { pass: true, label: 'cv.md found' };
-  }
+  if (existsSync(join(projectRoot, 'cv.md'))) return { pass: true, label: 'cv.md found' };
   return {
     pass: false,
     label: 'cv.md not found',
@@ -77,9 +125,7 @@ function checkCv() {
 }
 
 function checkProfile() {
-  if (existsSync(join(projectRoot, 'config', 'profile.yml'))) {
-    return { pass: true, label: 'config/profile.yml found' };
-  }
+  if (existsSync(join(projectRoot, 'config', 'profile.yml'))) return { pass: true, label: 'config/profile.yml found' };
   return {
     pass: false,
     label: 'config/profile.yml not found',
@@ -91,9 +137,7 @@ function checkProfile() {
 }
 
 function checkPortals() {
-  if (existsSync(join(projectRoot, 'portals.yml'))) {
-    return { pass: true, label: 'portals.yml found' };
-  }
+  if (existsSync(join(projectRoot, 'portals.yml'))) return { pass: true, label: 'portals.yml found' };
   return {
     pass: false,
     label: 'portals.yml not found',
@@ -107,45 +151,27 @@ function checkPortals() {
 function checkFonts() {
   const fontsDir = join(projectRoot, 'fonts');
   if (!existsSync(fontsDir)) {
-    return {
-      pass: false,
-      label: 'fonts/ directory not found',
-      fix: 'The fonts/ directory is required for PDF generation',
-    };
+    return { pass: false, label: 'fonts/ directory not found', fix: 'The fonts/ directory is required for PDF generation' };
   }
   try {
     const files = readdirSync(fontsDir);
     if (files.length === 0) {
-      return {
-        pass: false,
-        label: 'fonts/ directory is empty',
-        fix: 'The fonts/ directory must contain font files for PDF generation',
-      };
+      return { pass: false, label: 'fonts/ directory is empty', fix: 'The fonts/ directory must contain font files for PDF generation' };
     }
   } catch {
-    return {
-      pass: false,
-      label: 'fonts/ directory not readable',
-      fix: 'Check permissions on the fonts/ directory',
-    };
+    return { pass: false, label: 'fonts/ directory not readable', fix: 'Check permissions on the fonts/ directory' };
   }
   return { pass: true, label: 'Fonts directory ready' };
 }
 
 function checkAutoDir(name) {
   const dirPath = join(projectRoot, name);
-  if (existsSync(dirPath)) {
-    return { pass: true, label: `${name}/ directory ready` };
-  }
+  if (existsSync(dirPath)) return { pass: true, label: `${name}/ directory ready` };
   try {
     mkdirSync(dirPath, { recursive: true });
     return { pass: true, label: `${name}/ directory ready (auto-created)` };
   } catch {
-    return {
-      pass: false,
-      label: `${name}/ directory could not be created`,
-      fix: `Run: mkdir ${name}`,
-    };
+    return { pass: false, label: `${name}/ directory could not be created`, fix: `Run: mkdir ${name}` };
   }
 }
 
@@ -155,6 +181,9 @@ async function main() {
 
   const checks = [
     checkNodeVersion(),
+    checkProviderSelection(),
+    checkProviderRuntime(),
+    checkRunAgentAdapter(),
     checkDependencies(),
     await checkPlaywright(),
     checkCv(),
@@ -167,15 +196,13 @@ async function main() {
   ];
 
   let failures = 0;
-
   for (const result of checks) {
     if (result.pass) {
       console.log(`${green('✓')} ${result.label}`);
     } else {
-      failures++;
+      failures += 1;
       console.log(`${red('✗')} ${result.label}`);
-      const fixes = Array.isArray(result.fix) ? result.fix : [result.fix];
-      for (const hint of fixes) {
+      for (const hint of (Array.isArray(result.fix) ? result.fix : [result.fix]).filter(Boolean)) {
         console.log(`  ${dim('→ ' + hint)}`);
       }
     }
@@ -185,12 +212,12 @@ async function main() {
   if (failures > 0) {
     console.log(`Result: ${failures} issue${failures === 1 ? '' : 's'} found. Fix them and run \`npm run doctor\` again.`);
     process.exit(1);
-  } else {
-    console.log('Result: All checks passed. You\'re ready to go! Run `claude` to start.');
-    console.log('');
-    console.log('Join the community: https://discord.gg/8pRpHETxa4');
-    process.exit(0);
   }
+
+  console.log(`Result: All checks passed. You're ready to go with provider=${selectedProvider}.`);
+  console.log('');
+  console.log('Primary path: run Codex/OpenAI in this repo (or set CAREER_OPS_PROVIDER=claude to keep the Claude path).');
+  console.log('Join the community: https://discord.gg/8pRpHETxa4');
 }
 
 main().catch((err) => {

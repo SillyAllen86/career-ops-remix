@@ -44,7 +44,7 @@ Eres un worker de evaluación de ofertas de empleo for the candidate (read name 
 ### Paso 1 — Obtener JD
 
 1. Lee el archivo JD en `{{JD_FILE}}`
-2. Si el archivo está vacío o no existe, intenta obtener el JD desde `{{URL}}` con WebFetch
+2. Si el archivo está vacío o no existe, intenta obtener el JD desde `{{URL}}` con tu capacidad de fetch / lectura de páginas
 3. Si ambos fallan, reporta error y termina
 
 ### Paso 2 — Evaluación A-G
@@ -117,7 +117,7 @@ Sección de **gaps** con estrategia de mitigación para cada uno:
 
 #### Bloque D — Comp y Demanda
 
-Usar WebSearch para salarios actuales (Glassdoor, Levels.fyi, Blind), reputación comp de la empresa, tendencia demanda. Tabla con datos y fuentes citadas. Si no hay datos, decirlo.
+Usar búsqueda web para salarios actuales (Glassdoor, Levels.fyi, Blind), reputación comp de la empresa y tendencia de demanda. Tabla con datos y fuentes citadas. Si no hay datos, decirlo.
 
 Score de comp (1-5): 5=top quartile, 4=above market, 3=median, 2=slightly below, 1=well below.
 
@@ -142,11 +142,11 @@ Top 5 cambios al CV + Top 5 cambios a LinkedIn.
 
 Analyze posting signals to assess whether this is a real, active opening.
 
-**Batch mode limitations:** Playwright is not available, so posting freshness signals (exact days posted, apply button state) cannot be directly verified. Mark these as "unverified (batch mode)."
+**Batch mode limitations:** Browser automation is not available through the headless runner, so posting freshness signals (exact days posted, apply button state) cannot be directly verified. Mark these as "unverified (batch mode)."
 
 **What IS available in batch mode:**
 1. **Description quality analysis** -- Full JD text is available. Analyze specificity, requirements realism, salary transparency, boilerplate ratio.
-2. **Company hiring signals** -- WebSearch queries for layoff/freeze news (combine with Block D comp research).
+2. **Company hiring signals** -- web search queries for layoff/freeze news (combine with Block D comp research).
 3. **Reposting detection** -- Read `data/scan-history.tsv` to check for prior appearances.
 4. **Role market context** -- Qualitative assessment from JD content.
 

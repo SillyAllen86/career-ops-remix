@@ -1,80 +1,66 @@
 # Batch Processing
 
-Process multiple job offers in parallel via `claude -p` workers. Each worker runs the full evaluation pipeline (A-F report + PDF + tracker line) autonomously.
+Process multiple job offers in parallel via the provider-neutral adapter in `scripts/run-agent.mjs`. Each worker still runs the full evaluation pipeline (report + PDF + tracker TSV) autonomously.
 
-## Quick Start
+## Quick start
 
-1. **Add offers** to `batch-input.tsv` (tab-separated: `id`, `url`, `source`, `notes`):
+1. Add offers to `batch-input.tsv` (`id`, `url`, `source`, `notes`)
+2. Preview pending work:
 
-   ```tsv
-   id	url	source	notes
-   1	https://jobs.example.com/role-a	LinkedIn	
-   2	https://greenhouse.io/company/role-b	Greenhouse	priority
-   ```
+```bash
+./batch/batch-runner.sh --dry-run
+```
 
-2. **Dry run** to preview what will be processed:
+3. Run the batch with the primary runtime:
 
-   ```bash
-   ./batch/batch-runner.sh --dry-run
-   ```
+```bash
+./batch/batch-runner.sh --provider codex
+```
 
-3. **Run the batch**:
+4. Optional provider overrides:
 
-   ```bash
-   ./batch/batch-runner.sh
-   ```
+```bash
+./batch/batch-runner.sh --provider openai
+./batch/batch-runner.sh --provider claude
+```
 
-4. **Results** are automatically merged into `data/applications.md` and verified with `verify-pipeline.mjs` at the end of the run.
+5. Results are merged into `data/applications.md` and verified automatically at the end.
 
 ## Options
 
 | Flag | Default | Description |
 |------|---------|-------------|
-| `--parallel N` | `1` | Number of concurrent `claude -p` workers |
+| `--parallel N` | `1` | Number of concurrent workers |
+| `--provider NAME` | `codex` | Runtime provider: `codex`, `openai`, `claude` |
 | `--dry-run` | off | Preview pending offers without processing |
 | `--retry-failed` | off | Only retry offers marked as `failed` in state |
 | `--start-from N` | `0` | Skip offers with ID below N |
 | `--max-retries N` | `2` | Max retry attempts per offer before giving up |
+| `--min-score N` | `0` | Skip PDF/tracker for offers scoring below N |
 
-## Directory Layout
+## Directory layout
 
 ```
 batch/
   batch-runner.sh          # Orchestrator script
-  batch-prompt.md          # Prompt template sent to each worker
-  batch-input.tsv          # Input offers (you create this)
-  batch-state.tsv          # Processing state (auto-managed, resumable)
-  logs/                    # Per-offer worker logs ({report_num}-{id}.log)
+  batch-prompt.md          # Prompt template for workers
+  batch-input.tsv          # Input offers
+  batch-state.tsv          # Processing state (resumable)
+  logs/                    # Per-offer worker logs
   tracker-additions/       # TSV lines produced by workers
     merged/                # TSVs already merged into applications.md
 ```
 
-## How It Works
+## How it works
 
-1. **batch-runner.sh** reads `batch-input.tsv` and `batch-state.tsv` to determine which offers need processing.
-2. For each pending offer, it assigns a report number and launches a `claude -p` worker with `batch-prompt.md` as the system prompt (placeholders like `{{URL}}`, `{{REPORT_NUM}}` are resolved).
-3. Each worker evaluates the offer, writes a report to `reports/`, generates a PDF to `output/`, and writes a tracker TSV to `tracker-additions/`.
-4. After all workers finish, batch-runner calls `merge-tracker.mjs` to merge TSVs into `data/applications.md` and runs `verify-pipeline.mjs` to check integrity.
+1. `batch-runner.sh` reads `batch-input.tsv` and `batch-state.tsv`.
+2. For each pending offer, it resolves placeholders in `batch-prompt.md`, assigns the next report number, and calls `scripts/run-agent.mjs`.
+3. `scripts/run-agent.mjs` selects the configured provider runtime and forwards the task to it.
+4. The worker produces a report in `reports/`, a PDF in `output/`, and one tracker TSV in `tracker-additions/`.
+5. At the end, `merge-tracker.mjs` merges TSVs into `data/applications.md` and `verify-pipeline.mjs` checks integrity.
 
-## Tracker Merge
+## Compatibility notes
 
-Workers write one TSV per offer to `batch/tracker-additions/`. The merge script (`npm run merge`) handles:
-
-- Deduplication by company + role fuzzy match and report number
-- Column order conversion (TSV has status before score; applications.md has score before status)
-- In-place updates when a re-evaluation scores higher than the existing entry
-- Moving processed TSVs to `tracker-additions/merged/`
-
-Run `npm run merge` manually if you need to merge outside of a batch run.
-
-## Resumability
-
-`batch-state.tsv` tracks the status of every offer (`pending`, `processing`, `completed`, `failed`). If the batch is interrupted, re-running `batch-runner.sh` picks up where it left off -- completed offers are skipped automatically.
-
-A PID-based lock file (`batch-runner.pid`) prevents concurrent batch runs. If a previous run crashed, the stale lock is detected and removed automatically.
-
-## Prerequisites
-
-- `claude` CLI in PATH (Claude Max subscription for default model)
-- Node.js >= 18, Playwright chromium installed (`npm run doctor` to verify)
-- `batch-input.tsv` with at least one offer
+- Claude users can continue with `--provider claude`
+- Codex/OpenAI is the primary documented path
+- Output contracts, tracker merge behavior, retries, resume semantics, numbering, and logs are preserved

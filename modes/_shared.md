@@ -40,7 +40,7 @@ The evaluation uses 6 blocks (A-F) with a global score of 1-5:
 - 4.5+ → Strong match, recommend applying immediately
 - 4.0-4.4 → Good match, worth applying
 - 3.5-3.9 → Decent but not ideal, apply only if specific reason
-- Below 3.5 → Recommend against applying (see Ethical Use in CLAUDE.md)
+- Below 3.5 → Recommend against applying (see Ethical Use in CAREER_OPS_AGENT.md)
 
 ## Posting Legitimacy (Block G)
 
@@ -118,14 +118,14 @@ After detecting archetype, read `modes/_profile.md` for the user's specific fram
 
 | Tool | Use |
 |------|-----|
-| WebSearch | Comp research, trends, company culture, LinkedIn contacts, fallback for JDs |
-| WebFetch | Fallback for extracting JDs from static pages |
-| Playwright | Verify offers (browser_navigate + browser_snapshot). **NEVER 2+ agents with Playwright in parallel.** |
-| Read | cv.md, _profile.md, article-digest.md, cv-template.html |
-| Write | Temporary HTML for PDF, applications.md, reports .md |
-| Edit | Update tracker |
-| Canva MCP | Optional visual CV generation. Duplicate base design, edit text, export PDF. Requires `canva_resume_design_id` in profile.yml. |
-| Bash | `node generate-pdf.mjs` |
+| Web search | Comp research, trends, company culture, LinkedIn contacts, fallback for JDs |
+| Page fetch | Fallback for extracting JDs from static pages |
+| Browser automation | Verify offers by opening the page and reading rendered content. **NEVER 2+ agents with browser automation in parallel.** |
+| Read local files | cv.md, _profile.md, article-digest.md, cv-template.html |
+| Write files | Temporary HTML for PDF, reports .md, tracker TSVs |
+| Edit files | Update existing tracker entries when needed |
+| Optional design tooling | Visual CV generation if available. Requires `canva_resume_design_id` in profile.yml. |
+| Shell / scripts | `node generate-pdf.mjs` and pipeline verification commands |
 
 ### Time-to-offer priority
 - Working demo + metrics > perfection
