@@ -30,8 +30,8 @@ This repository is a public remix of the original Career-Ops project. It keeps t
 ## Quick Start
 
 ```bash
-git clone <repo-url>
-cd career-ops
+git clone https://github.com/SillyAllen86/career-ops-remix.git
+cd career-ops-remix
 npm install
 npx playwright install chromium
 npm run doctor

@@ -11,7 +11,7 @@ Use this guide when you want to turn the remix workspace into a public GitHub re
 
 ## Suggested repository name
 
-`career-ops-remix`
+`SillyAllen86/career-ops-remix`
 
 ## Suggested description
 
