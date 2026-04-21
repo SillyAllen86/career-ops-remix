@@ -1,0 +1,37 @@
+{
+  "name": "career-ops-remix",
+  "version": "1.0.0",
+  "description": "OpenAI/Codex-first job search workflow remix",
+  "scripts": {
+    "doctor": "node doctor.mjs",
+    "verify": "node verify-pipeline.mjs",
+    "normalize": "node normalize-statuses.mjs",
+    "dedup": "node dedup-tracker.mjs",
+    "merge": "node merge-tracker.mjs",
+    "pdf": "node generate-pdf.mjs",
+    "sync-check": "node cv-sync-check.mjs",
+    "update:check": "node update-system.mjs check",
+    "update": "node update-system.mjs apply",
+    "rollback": "node update-system.mjs rollback",
+    "liveness": "node check-liveness.mjs",
+    "scan": "node scan.mjs"
+  },
+  "keywords": [
+    "ai",
+    "job-search",
+    "openai",
+    "codex",
+    "automation"
+  ],
+  "author": "Career-Ops Remix Maintainers",
+  "homepage": "https://github.com/SillyAllen86/career-ops-remix",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SillyAllen86/career-ops-remix"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "js-yaml": "^4.1.1",
+    "playwright": "^1.58.1"
+  }
+}

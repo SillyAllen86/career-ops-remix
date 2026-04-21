@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Career-Ops Remix Architecture</title>
+  <desc id="desc">A clean architecture diagram showing the canonical instructions, wrappers, shared modes, and output pipeline.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#07111f"/>
+      <stop offset="100%" stop-color="#0f2440"/>
+    </linearGradient>
+    <linearGradient id="node" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#10263d"/>
+      <stop offset="100%" stop-color="#183a5c"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#19c37d"/>
+      <stop offset="100%" stop-color="#6ee7ff"/>
+    </linearGradient>
+    <style>
+      .title { font: 700 46px/1.2 "Inter", "Segoe UI", sans-serif; fill: #f7fbff; }
+      .subtitle { font: 400 22px/1.4 "Inter", "Segoe UI", sans-serif; fill: #bfd0e4; }
+      .node-title { font: 700 24px/1.2 "Inter", "Segoe UI", sans-serif; fill: #eef7ff; }
+      .node-body { font: 400 18px/1.5 "Inter", "Segoe UI", sans-serif; fill: #bfd0e4; }
+      .small { font: 600 16px/1.2 "SFMono-Regular", "Cascadia Code", monospace; fill: #a9c7de; }
+    </style>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <circle cx="1380" cy="120" r="180" fill="#19c37d" opacity="0.10"/>
+  <circle cx="220" cy="780" r="220" fill="#6ee7ff" opacity="0.08"/>
+
+  <text class="title" x="90" y="92">Career-Ops Remix Architecture</text>
+  <text class="subtitle" x="90" y="130">Same workflow, no private candidate data, OpenAI/Codex first, GitHub-ready.</text>
+
+  <g transform="translate(110,180)">
+    <rect x="430" y="0" width="520" height="90" rx="22" fill="url(#node)" stroke="#2f5d86" stroke-width="2"/>
+    <text class="node-title" x="50%" y="38" text-anchor="middle">CAREER_OPS_AGENT.md</text>
+    <text class="node-body" x="50%" y="63" text-anchor="middle">Canonical instructions and policy</text>
+
+    <rect x="70" y="140" width="360" height="110" rx="22" fill="url(#node)" stroke="#2f5d86" stroke-width="2"/>
+    <text class="node-title" x="250" y="178" text-anchor="middle">AGENTS.md</text>
+    <text class="node-body" x="250" y="206" text-anchor="middle">Codex / OpenAI wrapper</text>
+
+    <rect x="490" y="140" width="360" height="110" rx="22" fill="url(#node)" stroke="#2f5d86" stroke-width="2"/>
+    <text class="node-title" x="670" y="178" text-anchor="middle">CLAUDE.md</text>
+    <text class="node-body" x="670" y="206" text-anchor="middle">Thin compatibility wrapper</text>
+
+    <rect x="910" y="140" width="360" height="110" rx="22" fill="url(#node)" stroke="#2f5d86" stroke-width="2"/>
+    <text class="node-title" x="1090" y="178" text-anchor="middle">docs / templates / modes</text>
+    <text class="node-body" x="1090" y="206" text-anchor="middle">Shared workflow and prompt assets</text>
+
+    <path d="M690 90 L250 140" stroke="url(#accent)" stroke-width="5" fill="none"/>
+    <path d="M690 90 L670 140" stroke="url(#accent)" stroke-width="5" fill="none"/>
+    <path d="M690 90 L1090 140" stroke="url(#accent)" stroke-width="5" fill="none"/>
+
+    <rect x="130" y="330" width="350" height="140" rx="22" fill="url(#node)" stroke="#2f5d86" stroke-width="2"/>
+    <text class="node-title" x="305" y="370" text-anchor="middle">Single offer flow</text>
+    <text class="node-body" x="305" y="400" text-anchor="middle">JD or URL -> report -> PDF -> tracker</text>
+    <text class="small" x="305" y="433" text-anchor="middle">evaluate / auto-pipeline / pdf / tracker</text>
+
+    <rect x="530" y="330" width="350" height="140" rx="22" fill="url(#node)" stroke="#2f5d86" stroke-width="2"/>
+    <text class="node-title" x="705" y="370" text-anchor="middle">Portal scan</text>
+    <text class="node-body" x="705" y="400" text-anchor="middle">Playwright + APIs + search queries</text>
+    <text class="small" x="705" y="433" text-anchor="middle">scan / pipeline / dedup / liveness</text>
+
+    <rect x="930" y="330" width="350" height="140" rx="22" fill="url(#node)" stroke="#2f5d86" stroke-width="2"/>
+    <text class="node-title" x="1105" y="370" text-anchor="middle">Batch runtime</text>
+    <text class="node-body" x="1105" y="400" text-anchor="middle">scripts/run-agent.mjs + provider selection</text>
+    <text class="small" x="1105" y="433" text-anchor="middle">codex / openai / claude</text>
+
+    <path d="M305 250 L305 330" stroke="url(#accent)" stroke-width="5"/>
+    <path d="M705 250 L705 330" stroke="url(#accent)" stroke-width="5"/>
+    <path d="M1105 250 L1105 330" stroke="url(#accent)" stroke-width="5"/>
+
+    <rect x="430" y="540" width="520" height="120" rx="22" fill="#0b1c2e" stroke="#2f5d86" stroke-width="2"/>
+    <text class="node-title" x="690" y="582" text-anchor="middle">Outputs stay in plain text</text>
+    <text class="node-body" x="690" y="612" text-anchor="middle">data/applications.md, reports/, output/, batch/tracker-additions/</text>
+    <path d="M690 470 L690 540" stroke="url(#accent)" stroke-width="5"/>
+  </g>
+</svg>

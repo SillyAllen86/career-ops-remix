@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Career-Ops Remix Open Graph Image</title>
+  <desc id="desc">OpenAI/Codex-first job-search workflow template with clean documentation and no private candidate data.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#08111f"/>
+      <stop offset="100%" stop-color="#12324e"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#19c37d"/>
+      <stop offset="100%" stop-color="#6ee7ff"/>
+    </linearGradient>
+    <style>
+      .title { font: 800 64px/1.1 "Inter", "Segoe UI", sans-serif; fill: #fff; }
+      .body { font: 400 28px/1.5 "Inter", "Segoe UI", sans-serif; fill: #c4d4e8; }
+      .pill { font: 700 20px/1.2 "Inter", "Segoe UI", sans-serif; fill: #07111f; }
+    </style>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <circle cx="1080" cy="100" r="140" fill="#19c37d" opacity="0.14"/>
+  <circle cx="1040" cy="520" r="180" fill="#6ee7ff" opacity="0.08"/>
+  <rect x="76" y="76" width="1048" height="478" rx="36" fill="#0b1c2e" opacity="0.90" stroke="#2f5d86" stroke-width="2"/>
+  <rect x="112" y="112" width="240" height="46" rx="23" fill="url(#accent)"/>
+  <text class="pill" x="232" y="142" text-anchor="middle">OpenAI / Codex first</text>
+  <text class="title" x="112" y="246">Career-Ops Remix</text>
+  <text class="body" x="112" y="302">A GitHub-ready, sanitized job-search command center.</text>
+  <text class="body" x="112" y="352">Evaluation, PDF generation, portal scanning, batch processing, tracking.</text>
+  <text class="body" x="112" y="402">No personal candidate data included in shared files.</text>
+  <text class="body" x="112" y="468">Docs, images, templates, and workflows built for direct publishing.</text>
+</svg>

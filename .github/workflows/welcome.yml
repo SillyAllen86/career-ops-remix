@@ -1,0 +1,15 @@
+name: Welcome
+
+on:
+  issues:
+    types: [opened]
+  pull_request_target:
+    types: [opened]
+
+jobs:
+  welcome:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post a simple welcome note
+        run: |
+          echo "Thanks for contributing. Read CONTRIBUTING.md and docs/SETUP.md before opening a large change."

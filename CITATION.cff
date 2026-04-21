@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use Career-Ops Remix in research or documentation, please cite the project and the upstream Career-Ops source."
+title: "Career-Ops Remix"
+version: 1.0.0
+authors:
+  - family-names: "Career-Ops"
+    given-names: "Remix Maintainers"
+repository-code: "https://github.com/SillyAllen86/career-ops-remix"
+url: "https://github.com/SillyAllen86/career-ops-remix"
+license: MIT

@@ -1,0 +1,17 @@
+name: Bug report
+about: Report something that is broken
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: textarea
+    attributes:
+      label: What happened?
+      description: Describe the problem and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Steps to reproduce
+      description: Share the command, file, or workflow you used.
+    validations:
+      required: true
