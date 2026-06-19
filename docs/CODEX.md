@@ -18,6 +18,10 @@ The key rule: Codex must reuse the existing modes, templates, scripts, tracker f
 - Optional: Go 1.21+ for the dashboard
 - Optional: Claude CLI if you want the Claude compatibility path
 
+OpenClaw note:
+- When running inside OpenClaw on Linux or macOS, Career-Ops will also auto-detect the bundled Codex binary that ships with OpenClaw.
+- If you need to override detection manually, set `CAREER_OPS_CODEX_BIN=/absolute/path/to/codex`.
+
 ## Install
 
 ```bash

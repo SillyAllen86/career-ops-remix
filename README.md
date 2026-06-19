@@ -46,6 +46,8 @@ Career-Ops turns an AI coding CLI into a full job search command center. Instead
 
 OpenAI/Codex is now the primary documented path. Claude support still exists where available. Both paths reuse the same modes, scripts, tracker flow, report generation, and scanner behavior. Career-Ops stops at role-specific markdown CVs; the sibling `rendercv-theme-lab` workspace owns JSON, YAML, preview, and PDF generation.
 
+OpenClaw works as a first-class host for the Codex path. The repo now auto-detects the bundled Codex binary shipped inside OpenClaw, so `npm run doctor`, `scripts/run-agent.mjs`, and the batch runner work without a separate global Codex install as long as OpenClaw is present.
+
 ## OpenAI-first architecture
 
 - Canonical agent instructions live in `CAREER_OPS_AGENT.md`
@@ -184,6 +186,7 @@ career-ops/
 
 - `docs/SETUP.md` — setup and onboarding
 - `docs/CODEX.md` — Codex/OpenAI usage
+- `docs/OPENCLAW.md` — OpenClaw runtime notes and multi-machine Git sync
 - `docs/ARCHITECTURE.md` — system design and execution model
 - `docs/APPLY_AUTOMATION.md` — portal-aware assisted apply + status-sync design
 - `batch/README.md` — batch processing, provider selection, resumability

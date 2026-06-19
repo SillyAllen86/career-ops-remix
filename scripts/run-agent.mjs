@@ -3,6 +3,7 @@
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { resolveCodexBin } from './resolve-codex-bin.mjs';
 
 function usage() {
   console.error(`career-ops run-agent
@@ -93,13 +94,14 @@ function buildCommand(opts) {
   }
 
   if (provider === 'codex' || provider === 'openai') {
-    if (!commandExists('codex')) {
+    const codexBin = resolveCodexBin();
+    if (!codexBin) {
       throw new Error('Selected provider=' + provider + ' but the `codex` CLI is not available in PATH.');
     }
     const args = ['exec', '--full-auto', '-C', projectDir];
     if (opts.model) args.push('--model', opts.model);
     args.push(combinedPrompt);
-    return { command: 'codex', args, cwd: projectDir };
+    return { command: codexBin, args, cwd: projectDir };
   }
 
   throw new Error(`Unsupported provider: ${opts.provider}. Use codex, openai, or claude.`);

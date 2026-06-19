@@ -29,6 +29,7 @@ START_FROM=0
 MAX_RETRIES=2
 MIN_SCORE=0
 PROVIDER="${CAREER_OPS_PROVIDER:-codex}"
+CODEX_RESOLVER="$PROJECT_DIR/scripts/resolve-codex-bin.mjs"
 
 usage() {
   cat <<'USAGE'
@@ -137,8 +138,9 @@ check_prerequisites() {
 
   case "$PROVIDER" in
     codex|openai)
-      if ! command -v codex &>/dev/null; then
+      if ! node "$CODEX_RESOLVER" >/dev/null 2>&1; then
         echo "ERROR: provider '$PROVIDER' selected but 'codex' CLI not found in PATH."
+        echo "       You can also set CAREER_OPS_CODEX_BIN=/absolute/path/to/codex."
         exit 1
       fi
       ;;

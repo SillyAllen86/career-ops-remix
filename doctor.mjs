@@ -9,6 +9,7 @@ import { existsSync, mkdirSync, readdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { spawnSync } from 'child_process';
+import { resolveCodexBin } from './scripts/resolve-codex-bin.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const projectRoot = __dirname;
@@ -87,13 +88,18 @@ function checkProviderRuntime() {
   }
 
   if (selectedProvider === 'codex' || selectedProvider === 'openai') {
-    if (commandExists('codex')) {
-      return { pass: true, label: `Codex CLI available for provider=${selectedProvider}` };
+    const codexBin = resolveCodexBin();
+    if (codexBin) {
+      return { pass: true, label: `Codex CLI available for provider=${selectedProvider} (${codexBin})` };
     }
     return {
       pass: false,
       label: `Codex CLI not found for provider=${selectedProvider}`,
-      fix: 'Install the Codex CLI or switch CAREER_OPS_PROVIDER=claude',
+      fix: [
+        'Install the Codex CLI, or',
+        'Set CAREER_OPS_CODEX_BIN=/absolute/path/to/codex, or',
+        'Switch CAREER_OPS_PROVIDER=claude',
+      ],
     };
   }
 

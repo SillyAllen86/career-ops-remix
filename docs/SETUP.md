@@ -16,6 +16,8 @@ Both reuse the same checked-in modes, templates, scripts, tracker flow, report g
 - Optional: Claude CLI if you want to keep the Claude runtime path
 - Optional: Go 1.21+ for the dashboard TUI
 
+If you run Career-Ops from OpenClaw, the repo can use OpenClaw's bundled Codex binary automatically. You do not need a separate global Codex install unless you want one for direct shell usage.
+
 ## Quick start
 
 ### 1. Clone and install
@@ -59,6 +61,12 @@ CAREER_OPS_PROVIDER=codex npm run doctor
 ```
 
 Supported values: `codex`, `openai`, `claude`.
+
+Optional override if detection needs help:
+
+```bash
+export CAREER_OPS_CODEX_BIN=/absolute/path/to/codex
+```
 
 ### 6. Start using the agent
 
