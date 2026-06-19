@@ -198,4 +198,4 @@ In deutschen Stellenanzeigen und Vertragsverhandlungen tauchen Begriffe auf, die
 | Read | cv.md, article-digest.md, cv-template.html |
 | Write | Temporäres HTML für PDF, applications.md, Reports .md |
 | Edit | Tracker aktualisieren |
-| Bash | `node generate-pdf.mjs` |
+| Bash | `scripts/cv-tailor.mjs` und Pipeline-Prüfkommandos |

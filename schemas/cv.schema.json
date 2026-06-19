@@ -1,0 +1,249 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://career-ops.local/schemas/cv.schema.json",
+  "title": "Career-Ops CV Schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "generatedAt",
+    "source",
+    "profile"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "title",
+        "sha256",
+        "lineCount",
+        "lastModified"
+      ],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "title": { "type": "string", "minLength": 1 },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "lineCount": { "type": "integer", "minimum": 1 },
+        "lastModified": { "type": "string", "format": "date-time" }
+      }
+    },
+    "profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "headline", "location", "email", "phone", "linkedin", "github"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "headline": { "type": "string", "minLength": 1 },
+        "location": { "type": "string", "minLength": 1 },
+        "email": { "type": "string", "minLength": 1 },
+        "phone": { "type": "string", "minLength": 0 },
+        "linkedin": { "type": "string", "minLength": 1 },
+        "github": { "type": "string", "minLength": 1 }
+      }
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 0
+    },
+    "coreAreasOfExpertise": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "domainsAndSystemsKnowledge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["domains", "systems"],
+      "properties": {
+        "domains": {
+          "type": "array",
+          "minItems": 0,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "systems": {
+          "type": "array",
+          "minItems": 0,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "professionalExperience": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["company", "title", "period", "bullets"],
+        "properties": {
+          "company": { "type": "string", "minLength": 1 },
+          "title": { "type": "string", "minLength": 1 },
+          "location": { "type": "string", "minLength": 1 },
+          "period": { "type": "string", "minLength": 1 },
+          "bullets": {
+            "type": "array",
+            "minItems": 0,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    },
+    "selectedStrategicContributions": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "selectedPersonalTechnicalProjects": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["title", "role", "period", "bullets"],
+        "properties": {
+          "title": { "type": "string", "minLength": 1 },
+          "role": { "type": "string", "minLength": 1 },
+          "period": { "type": "string", "minLength": 1 },
+          "bullets": {
+            "type": "array",
+            "minItems": 0,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    },
+    "thoughtLeadershipPublications": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["title", "role", "year", "bullets"],
+        "properties": {
+          "title": { "type": "string", "minLength": 1 },
+          "role": { "type": "string", "minLength": 1 },
+          "year": { "type": "string", "minLength": 1 },
+          "bullets": {
+            "type": "array",
+            "minItems": 0,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    },
+    "education": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["degree", "institution", "years"],
+        "properties": {
+          "degree": { "type": "string", "minLength": 1 },
+          "institution": { "type": "string", "minLength": 1 },
+          "years": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "certificationsAndTraining": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "languages": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["language"],
+        "properties": {
+          "language": { "type": "string", "minLength": 1 },
+          "proficiency": { "type": "string" }
+        }
+      }
+    },
+    "skillsAndKeywordBank": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["category", "items"],
+        "properties": {
+          "category": { "type": "string", "minLength": 1 },
+          "items": {
+            "type": "array",
+            "minItems": 0,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    },
+    "sectionOrder": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "customSections": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "title", "lines"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "title": { "type": "string", "minLength": 1 },
+          "lines": {
+            "type": "array",
+            "minItems": 0,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    }
+  }
+}

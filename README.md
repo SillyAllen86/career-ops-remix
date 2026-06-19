@@ -37,14 +37,14 @@
 Career-Ops turns an AI coding CLI into a full job search command center. Instead of manually tracking applications in a spreadsheet, you get an AI-powered pipeline that:
 
 - **Evaluates offers** with a structured A-F scoring system (plus legitimacy block G)
-- **Generates tailored PDFs** — ATS-optimized CVs customized per job description
+- **Generates tailored CV markdown** — role-specific `cv.md` files for downstream rendering
 - **Scans portals** automatically (Greenhouse, Ashby, Lever, company pages)
 - **Processes in batch** via a provider-neutral execution adapter
 - **Tracks everything** in a single source of truth with integrity checks
 
 > Important: This is NOT a spray-and-pray tool. Career-Ops is a filter — it helps you find the few offers worth your time out of hundreds. The system strongly recommends against applying to anything scoring below 4.0/5. Always review before submitting.
 
-OpenAI/Codex is now the primary documented path. Claude support still exists where available. Both paths reuse the same modes, templates, scripts, tracker flow, report generation, PDF generation, and scanner behavior.
+OpenAI/Codex is now the primary documented path. Claude support still exists where available. Both paths reuse the same modes, scripts, tracker flow, report generation, and scanner behavior. Career-Ops stops at role-specific markdown CVs; the sibling `rendercv-theme-lab` workspace owns JSON, YAML, preview, and PDF generation.
 
 ## OpenAI-first architecture
 
@@ -90,9 +90,9 @@ Career-Ops is a single slash-command-style workflow with multiple modes:
 
 ```
 /career-ops                → Show all available commands
-/career-ops {paste a JD}   → Full auto-pipeline (evaluate + PDF + tracker)
+/career-ops {paste a JD}   → Full auto-pipeline (evaluate + role CV + tracker)
 /career-ops scan           → Scan portals for new offers
-/career-ops pdf            → Generate ATS-optimized CV
+/career-ops pdf            → Produce the role-specific cv.md, then hand off to rendercv-theme-lab
 /career-ops batch          → Batch evaluate multiple offers
 /career-ops tracker        → View application status
 /career-ops apply          → Fill application forms with AI
@@ -105,6 +105,42 @@ Career-Ops is a single slash-command-style workflow with multiple modes:
 
 Or just paste a job URL or description directly — Career-Ops auto-detects it and runs the full pipeline.
 
+## Role CV Boundary
+
+Career-Ops owns only the role reasoning and markdown CV output:
+
+```bash
+npm run cv:tailor -- --role="Senior Enterprise Architect" --focus="SAP integration, target-state architecture"
+```
+
+That command writes:
+
+- `generated/roles/<role-slug>/cv.md`
+
+For every derived artifact after that, use the sibling `rendercv-theme-lab` workspace:
+
+```bash
+cd ../rendercv-theme-lab
+node scripts/cv-role-export.mjs --input=../career-ops/generated/roles/<role-slug>/cv.md --theme=labtheme
+node scripts/cv-rendercv.mjs --input=generated/roles/<role-slug>/cv.json --theme=labtheme
+```
+
+The optional hidden ATS appendix is disabled by default. Enable it only as an experiment from `rendercv-theme-lab` with `--ats-appendix`.
+
+## Multiple Candidate Profiles
+
+The checked-in workflow assumes one active candidate at a time in the canonical files `cv.md` and `config/profile.yml`.
+
+If you want to reuse the same workspace for multiple people, store separate profile packs under `profiles/` and activate one when needed:
+
+```bash
+node scripts/profile-manager.mjs capture pravin
+node scripts/profile-manager.mjs init sister
+node scripts/profile-manager.mjs activate sister
+```
+
+See `profiles/README.md` for the profile-pack workflow.
+
 ## Batch execution
 
 Batch mode now runs through the provider-neutral adapter:
@@ -115,7 +151,7 @@ Batch mode now runs through the provider-neutral adapter:
 ./batch/batch-runner.sh --provider claude
 ```
 
-The tracker TSV flow, report naming, PDF contract, merge logic, retries, resume behavior, and logs are unchanged.
+The tracker TSV flow, report naming, merge logic, retries, resume behavior, and logs are unchanged.
 
 ## Project structure
 
@@ -127,19 +163,19 @@ career-ops/
 ├── cv.md                       # Your CV (create this)
 ├── config/profile.example.yml  # Template for your profile
 ├── modes/                      # Shared mode files
-├── templates/                  # CV template + states + portal config template
+├── templates/                  # States + portal config template
 ├── scripts/run-agent.mjs       # Provider-neutral batch adapter
 ├── batch/                      # Batch runner, prompt, state, logs, TSV additions
 ├── dashboard/                  # Go TUI pipeline viewer
 ├── data/                       # Tracking data
 ├── reports/                    # Evaluation reports
-└── output/                     # Generated PDFs
+└── generated/roles/            # Role-specific cv.md outputs
 ```
 
 ## Tech stack
 
 - Agent runtime: Codex/OpenAI first, Claude supported
-- PDF: Playwright + HTML template
+- CV rendering/PDF: sibling `rendercv-theme-lab` workspace
 - Scanner: Playwright + portal APIs + direct HTTP
 - Dashboard: Go + Bubble Tea + Lipgloss
 - Data: Markdown tables + YAML config + TSV batch files
@@ -149,6 +185,7 @@ career-ops/
 - `docs/SETUP.md` — setup and onboarding
 - `docs/CODEX.md` — Codex/OpenAI usage
 - `docs/ARCHITECTURE.md` — system design and execution model
+- `docs/APPLY_AUTOMATION.md` — portal-aware assisted apply + status-sync design
 - `batch/README.md` — batch processing, provider selection, resumability
 
 ## Disclaimer

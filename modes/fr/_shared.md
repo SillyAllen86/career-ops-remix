@@ -202,4 +202,4 @@ Dans les offres et negociations francophones, certains termes n'existent pas sur
 | Read | cv.md, article-digest.md, cv-template.html |
 | Write | HTML temporaire pour PDF, applications.md, reports .md |
 | Edit | Mettre a jour le tracker |
-| Bash | `node generate-pdf.mjs` |
+| Bash | `scripts/cv-tailor.mjs` et commandes de vérification du pipeline |

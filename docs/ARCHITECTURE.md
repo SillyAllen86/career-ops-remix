@@ -57,7 +57,7 @@ The domain workflow did not change. The refactor only changed the execution laye
 - Batch execution now goes through `scripts/run-agent.mjs`
 - `CAREER_OPS_PROVIDER` selects `codex`, `openai`, or `claude`
 
-This keeps business logic, files, report generation, tracker flow, PDF generation, and scanning behavior intact.
+This keeps business logic, files, report generation, tracker flow, and scanning behavior intact. CV rendering artifacts are owned by the sibling `rendercv-theme-lab` workspace.
 
 ## Evaluation flow (single offer)
 
@@ -67,7 +67,7 @@ This keeps business logic, files, report generation, tracker flow, PDF generatio
 4. Evaluate: blocks A-G
 5. Score: weighted 1-5 global score
 6. Report: save `reports/{num}-{company}-{date}.md`
-7. PDF: generate ATS-optimized CV via `generate-pdf.mjs`
+7. CV: generate role-specific `cv.md`; hand off to `rendercv-theme-lab` for JSON/YAML/PDF when needed
 8. Track: write TSV to `batch/tracker-additions/` and merge
 
 ## Batch processing
@@ -95,8 +95,44 @@ article-digest.md           -> proof points
 config/profile.yml          -> candidate identity + targeting
 portals.yml                 -> scanner configuration
 templates/states.yml        -> canonical statuses
-templates/cv-template.html  -> PDF generation template
+templates/                 -> workflow state and portal templates
 ```
+
+## Assisted-apply subsystem
+
+The browser automation layer now has its own explicit architecture and is no longer based on generic portal probes.
+
+```text
+apply metadata in portals.yml
+        │
+        ├── apply.portals  -> portal-level ATS metadata
+        └── apply.jobs     -> job-level routing data
+        │
+        ▼
+apply-assist.mjs
+        │
+        ├── session-manager.mjs  -> persistent local browser state
+        ├── logger.mjs           -> JSONL logs + screenshots + HTML
+        ├── form-targeting.mjs   -> visible active-form targeting
+        └── adapters/
+             ├── workday.mjs
+             └── successfactors.mjs
+
+status-sync.mjs
+        │
+        └── reads saved sessions, opens candidate home/applications,
+            and proposes tracker updates without writing them automatically
+```
+
+Safety properties:
+
+- apply automation and status sync are separate commands
+- manual checkpoints are first-class outcomes
+- persistent session state stays local under `runtime/sessions/`
+- run artifacts stay local under `runtime/runs/`
+- no-submit behavior is explicit and defaults to on
+
+See `docs/APPLY_AUTOMATION.md` for the detailed apply architecture.
 
 ## File naming conventions
 

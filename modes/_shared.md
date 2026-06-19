@@ -85,6 +85,42 @@ Classify every offer into one of these types (or hybrid of 2):
 
 After detecting archetype, read `modes/_profile.md` for the user's specific framing and proof points for that archetype.
 
+## CV and Role Calibration Rules
+
+Before generating candidate-facing text, classify the role on these axes: function, seniority, orientation, scope, environment, and value mode.
+
+### Universal rules
+
+- Keep page 1 finished and credible. No rough-note artifacts, duplicated labels, or mixed-purpose sections.
+- Use the strongest evidence available. Direct experience first, adjacent experience second, projects and certifications third, keywords only if already backed by evidence.
+- Keep bullets concise, distinct, and outcome-led.
+- Do not repeat the same claim in summary, expertise, and experience.
+- Do not keyword dump page 1 or overfit the CV so hard that the master profile becomes misleading.
+
+### Conditional emphasis
+
+- Strategy or cross-functional roles -> target-state design, operating model, decision frameworks, roadmap ownership, and alignment.
+- Product roles -> prioritization, adoption, trade-offs, user value, and roadmap decisions.
+- Operations roles -> throughput, controls, handoffs, planning, and risk reduction.
+- Quality or compliance roles -> governance, validation, controls, inspection readiness, and remediation.
+- Technical, data, or platform roles -> architecture, integration, data quality, information flow, analytics, and debugging.
+
+### Section purpose
+
+- Summary = positioning.
+- Core areas = keyword scan.
+- Experience = proof.
+- Projects = supporting edge.
+- Domains and systems = context fit.
+
+### Generator constraints
+
+- Never invent experience or metrics.
+- Never turn one role into every role.
+- Never mix domains, systems, and responsibilities in the same section.
+- Never promote adjacent exposure into direct ownership.
+- Never let the summary, expertise, and experience sections say the same thing three times.
+
 ## Global Rules
 
 ### NEVER
@@ -121,11 +157,11 @@ After detecting archetype, read `modes/_profile.md` for the user's specific fram
 | Web search | Comp research, trends, company culture, LinkedIn contacts, fallback for JDs |
 | Page fetch | Fallback for extracting JDs from static pages |
 | Browser automation | Verify offers by opening the page and reading rendered content. **NEVER 2+ agents with browser automation in parallel.** |
-| Read local files | cv.md, _profile.md, article-digest.md, cv-template.html |
-| Write files | Temporary HTML for PDF, reports .md, tracker TSVs |
+| Read local files | cv.md, _profile.md, article-digest.md |
+| Write files | role-specific cv.md, reports .md, tracker TSVs |
 | Edit files | Update existing tracker entries when needed |
 | Optional design tooling | Visual CV generation if available. Requires `canva_resume_design_id` in profile.yml. |
-| Shell / scripts | `node generate-pdf.mjs` and pipeline verification commands |
+| Shell / scripts | `scripts/cv-tailor.mjs` and pipeline verification commands |
 
 ### Time-to-offer priority
 - Working demo + metrics > perfection
@@ -148,7 +184,7 @@ These rules apply to ALL generated text that ends up in candidate-facing documen
 - "demonstrated ability to" / "best practices" (name the practice)
 
 ### Unicode normalization for ATS
-`generate-pdf.mjs` automatically normalizes em-dashes, smart quotes, and zero-width characters to ASCII equivalents for maximum ATS compatibility. But avoid generating them in the first place.
+Render artifacts are produced in `rendercv-theme-lab`. Avoid generating em-dashes, smart quotes, and zero-width characters in candidate-facing text.
 
 ### Vary sentence structure
 - Don't start every bullet with the same verb

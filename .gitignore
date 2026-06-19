@@ -24,8 +24,10 @@ modes/_profile.md
 
 # Generated
 .resolved-prompt-*
+generated/
 node_modules/
 bun.lock
+runtime/
 
 # OS
 .DS_Store

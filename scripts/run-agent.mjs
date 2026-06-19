@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { spawnSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 function usage() {
@@ -79,6 +79,9 @@ function buildCommand(opts) {
     throw new Error('--prompt is required');
   }
 
+  const systemPrompt = readFileSync(systemPromptFile, 'utf8').trim();
+  const combinedPrompt = `${systemPrompt}\n\nTask:\n${opts.prompt}`;
+
   if (provider === 'claude') {
     if (!commandExists('claude')) {
       throw new Error('Selected provider=claude but the `claude` CLI is not available in PATH.');
@@ -93,10 +96,9 @@ function buildCommand(opts) {
     if (!commandExists('codex')) {
       throw new Error('Selected provider=' + provider + ' but the `codex` CLI is not available in PATH.');
     }
-    const args = ['-q', '--full-auto', '-w', projectDir, '--project-doc', systemPromptFile, '--full-stdout'];
-    if (provider === 'openai') args.push('--provider', 'openai');
+    const args = ['exec', '--full-auto', '-C', projectDir];
     if (opts.model) args.push('--model', opts.model);
-    args.push(opts.prompt);
+    args.push(combinedPrompt);
     return { command: 'codex', args, cwd: projectDir };
   }
 

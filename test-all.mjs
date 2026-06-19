@@ -63,16 +63,20 @@ for (const f of mjsFiles) {
 console.log('\n2. Script execution (graceful on empty data)');
 
 const scripts = [
-  { name: 'cv-sync-check.mjs', expectExit: 1, allowFail: true }, // fails without cv.md (normal in repo)
-  { name: 'verify-pipeline.mjs', expectExit: 0 },
-  { name: 'normalize-statuses.mjs', expectExit: 0 },
-  { name: 'dedup-tracker.mjs', expectExit: 0 },
-  { name: 'merge-tracker.mjs', expectExit: 0 },
-  { name: 'update-system.mjs check', expectExit: 0 },
+  { name: 'scripts/cv-build.mjs', args: [], expectExit: 0 },
+  { name: 'scripts/cv-editorial-test.mjs', args: [], expectExit: 0 },
+  { name: 'scripts/cv-mapping-test.mjs', args: [], expectExit: 0 },
+  { name: 'scripts/cv-tailor.mjs', args: ['--role=Senior Enterprise Architect', '--focus=SAP integration,target-state architecture'], expectExit: 0 },
+  { name: 'cv-sync-check.mjs', args: [], expectExit: 1, allowFail: true }, // fails without cv.md (normal in repo)
+  { name: 'verify-pipeline.mjs', args: [], expectExit: 0 },
+  { name: 'normalize-statuses.mjs', args: [], expectExit: 0 },
+  { name: 'dedup-tracker.mjs', args: [], expectExit: 0 },
+  { name: 'merge-tracker.mjs', args: [], expectExit: 0 },
+  { name: 'update-system.mjs', args: ['check'], expectExit: 0 },
 ];
 
-for (const { name, allowFail } of scripts) {
-  const result = run('node', name.split(' '), { stdio: ['pipe', 'pipe', 'pipe'] });
+for (const { name, args = [], allowFail } of scripts) {
+  const result = run('node', [name, ...args], { stdio: ['pipe', 'pipe', 'pipe'] });
   if (result !== null) {
     pass(`${name} runs OK`);
   } else if (allowFail) {
@@ -118,6 +122,87 @@ try {
   fail(`Liveness classification tests crashed: ${e.message}`);
 }
 
+// ── 3B. APPLY ARCHITECTURE SANITY CHECKS ─────────────────────────
+
+console.log('\n3b. Apply architecture sanity checks');
+
+try {
+  const { normalizeApplyConfig } = await import(pathToFileURL(join(ROOT, 'lib/apply/config.mjs')).href);
+  const { detectCheckpointFromText, normalizeRunMode } = await import(pathToFileURL(join(ROOT, 'lib/apply/types.mjs')).href);
+  const { scoreFieldCandidate } = await import(pathToFileURL(join(ROOT, 'lib/apply/form-targeting.mjs')).href);
+
+  const config = normalizeApplyConfig({
+    apply: {
+      portals: [{
+        portal_id: 'takeda-workday',
+        ats_type: 'workday',
+        login_entry_url: 'https://example.com/login',
+        profile_url: 'https://example.com/profile',
+        status_page_url: 'https://example.com/status',
+        job_apply_entry_mode: 'role_page_click',
+        requires_account_before_form: true,
+        supports_resume_autofill: true,
+        supports_guest_apply: false,
+        session_storage_key: 'takeda-workday-pravin',
+      }],
+      jobs: [{
+        company: 'Takeda',
+        job_url: 'https://example.com/job',
+        apply_url: 'https://example.com/apply',
+        portal_id: 'takeda-workday',
+        routing_mode: 'role_page_click',
+      }],
+    },
+  });
+
+  if (config.portalsById['takeda-workday'] && config.jobs[0]?.portal_id === 'takeda-workday') {
+    pass('Apply config keeps portal metadata separate from job routing data');
+  } else {
+    fail('Apply config normalization is broken');
+  }
+
+  const checkpoint = detectCheckpointFromText('Please enter your salary expectation before you continue.');
+  if (checkpoint?.reason === 'salary_input') {
+    pass('Manual checkpoint detection recognizes salary questions');
+  } else {
+    fail('Manual checkpoint detection missed salary input');
+  }
+
+  if (normalizeRunMode('unknown-mode') === 'fill_until_review') {
+    pass('Invalid apply modes fall back to fill_until_review');
+  } else {
+    fail('Invalid apply modes do not normalize safely');
+  }
+
+  const emailScore = scoreFieldCandidate({
+    label: 'Email address',
+    aria: '',
+    name: 'email',
+    id: 'email',
+    placeholder: 'name@example.com',
+    type: 'email',
+    visible: true,
+    enabled: true,
+  }, [{ keywords: ['email'], weight: 5 }]);
+  const searchScore = scoreFieldCandidate({
+    label: 'Search jobs',
+    aria: '',
+    name: 'search',
+    id: 'search',
+    placeholder: 'Search',
+    type: 'text',
+    visible: true,
+    enabled: true,
+  }, [{ keywords: ['email'], weight: 5 }]);
+  if (emailScore > searchScore) {
+    pass('Field ranking prefers relevant visible form fields over search noise');
+  } else {
+    fail('Field ranking does not prefer relevant form fields');
+  }
+} catch (e) {
+  fail(`Apply architecture sanity tests crashed: ${e.message}`);
+}
+
 // ── 4. DASHBOARD BUILD ──────────────────────────────────────────
 
 if (!QUICK) {
@@ -141,7 +226,8 @@ const systemFiles = [
   'CLAUDE.md', 'VERSION', 'DATA_CONTRACT.md',
   'modes/_shared.md', 'modes/_profile.template.md',
   'modes/oferta.md', 'modes/pdf.md', 'modes/scan.md',
-  'templates/states.yml', 'templates/cv-template.html',
+  'templates/states.yml',
+  'docs/APPLY_AUTOMATION.md', 'apply-assist.mjs', 'status-sync.mjs',
   '.claude/skills/career-ops/SKILL.md',
 ];
 

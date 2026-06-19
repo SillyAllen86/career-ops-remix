@@ -9,6 +9,8 @@ Clasificar la oferta en uno de los 6 arquetipos (ver `_shared.md`). Si es híbri
 - Cómo reescribir el summary en bloque E
 - Qué historias STAR preparar en bloque F
 
+Antes de escribir, clasifica tambien la oferta por funcion, seniority, orientation, scope, environment y value mode. Usa esa clasificacion para decidir si priorizar estrategia, producto, operaciones, calidad/compliance o profundidad tecnica/datos.
+
 ## Bloque A — Resumen del Rol
 
 Tabla con:
@@ -31,6 +33,12 @@ Lee `cv.md`. Crea tabla con cada requisito del JD mapeado a líneas exactas del 
 - Si LLMOps → priorizar evals, observability, pipelines
 - Si Agentic → priorizar multi-agent, HITL, orchestration
 - Si Transformation → priorizar change management, adoption, scaling
+
+**Regla de seleccion de evidencia:**
+- Primero mapea evidencia directa del CV.
+- Luego usa evidencia adyacente que sea claramente transferible.
+- Luego usa proyectos o certificaciones como soporte.
+- Solo al final usa keywords del JD, y solo si ya hay evidencia que las sostenga.
 
 Sección de **gaps** con estrategia de mitigación para cada uno. Para cada gap:
 1. ¿Es un hard blocker o un nice-to-have?
@@ -60,6 +68,8 @@ Tabla con datos y fuentes citadas. Si no hay datos, decirlo en vez de inventar.
 | 1 | Summary | ... | ... | ... |
 | ... | ... | ... | ... | ... |
 
+Si una idea ya aparece con fuerza en Summary, CV match o STAR stories, comprime o eliminala en las demas secciones. No repitas la misma afirmacion tres veces.
+
 Top 5 cambios al CV + Top 5 cambios a LinkedIn para maximizar match.
 
 ## Bloque F — Plan de Entrevistas
@@ -80,6 +90,9 @@ The **Reflection** column captures what was learned or what would be done differ
 - LLMOps → enfatizar métricas, evals, production hardening
 - Agentic → enfatizar orchestration, error handling, HITL
 - Transformation → enfatizar adopción, cambio organizacional
+- Product -> enfatizar priorizacion, adopcion, trade-offs y valor de usuario
+- Operations -> enfatizar throughput, controles, handoffs, planning y risk reduction
+- Quality/compliance -> enfatizar governance, validation, inspection readiness y remediation
 
 Incluir también:
 - 1 case study recomendado (cuál de sus proyectos presentar y cómo)

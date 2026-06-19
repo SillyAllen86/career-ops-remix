@@ -22,6 +22,8 @@ There are two layers. Read `DATA_CONTRACT.md` for the full list.
 
 **THE RULE: When the user asks to customize anything (archetypes, narrative, negotiation scripts, proof points, location policy, comp targets), ALWAYS write to `modes/_profile.md` or `config/profile.yml`. NEVER edit `modes/_shared.md` for user-specific content.** This ensures system updates don't overwrite their customizations.
 
+**MINIMAL FIELD RULE: When writing or updating any provider wrapper or referenced instruction file, include only the fields and sections needed for that provider and task. Do not duplicate canonical content, do not add extra wrapper-only fields, and do not introduce new section names unless the downstream parser or workflow explicitly requires them.**
+
 ## Update Check
 
 On the first message of each session, run the update checker silently:
@@ -53,9 +55,8 @@ AI-powered job search automation for coding agents and AI CLIs: pipeline trackin
 | `data/pipeline.md` | Inbox of pending URLs |
 | `data/scan-history.tsv` | Scanner dedup history |
 | `portals.yml` | Query and company config |
-| `templates/cv-template.html` | HTML template for CVs |
-| `generate-pdf.mjs` | Playwright: HTML to PDF |
 | `article-digest.md` | Compact proof points from portfolio (optional) |
+| `data/experience-bank.md` | Expanded proof-point bank for role-specific CV tailoring |
 | `interview-prep/story-bank.md` | Accumulated STAR+R stories across evaluations |
 | `interview-prep/{company}-{role}.md` | Company-specific interview intel reports |
 | `analyze-patterns.mjs` | Pattern analysis script (JSON output) |
@@ -64,6 +65,7 @@ AI-powered job search automation for coding agents and AI CLIs: pipeline trackin
 | `scan.mjs` | Zero-token portal scanner — hits Greenhouse/Ashby/Lever APIs directly, zero LLM cost |
 | `check-liveness.mjs` | Job posting liveness checker |
 | `liveness-core.mjs` | Shared liveness logic (expired signals win over generic Apply text) |
+| `scripts/cv-tailor.mjs` | Generate a role-specific `cv.md` from the master CV + experience bank |
 | `reports/` | Evaluation reports (format: `{###}-{company-slug}-{YYYY-MM-DD}.md`). Blocks A-F + G (Posting Legitimacy). Header includes `**Legitimacy:** {tier}`. |
 
 ### OpenCode Commands
@@ -183,7 +185,7 @@ This system is designed to be customized by YOU (AI Agent). When the user asks y
 - "Translate the modes to English" → edit all files in `modes/`
 - "Add these companies to my portals" → edit `portals.yml`
 - "Update my profile" → edit `config/profile.yml`
-- "Change the CV template design" → edit `templates/cv-template.html`
+- "Change the CV template design" → switch to the sibling `rendercv-theme-lab` workspace
 - "Adjust the scoring weights" → edit `modes/_profile.md` for user-specific weighting, or edit `modes/_shared.md` and `batch/batch-prompt.md` only when changing the shared system defaults for everyone
 
 ### Language Modes
@@ -216,6 +218,7 @@ Default modes are in `modes/` (English). Additional language-specific modes are 
 | If the user... | Mode |
 |----------------|------|
 | Pastes JD or URL | auto-pipeline (evaluate + report + PDF + tracker) |
+| Wants a structured JD-first fit workflow with ATS extraction, ideal profile, experience mapping, and review gate | `job-fit-pipeline` |
 | Asks to evaluate offer | `oferta` |
 | Asks to compare offers | `ofertas` |
 | Wants LinkedIn outreach | `contacto` |
@@ -234,9 +237,49 @@ Default modes are in `modes/` (English). Additional language-specific modes are 
 
 ### CV Source of Truth
 
-- `cv.md` in project root is the canonical CV
+- `cv.md` in project root is the canonical master CV and must remain unchanged unless the user explicitly edits it
+- `data/experience-bank.md` is the role-tailoring evidence bank used to build per-role CV variants
+- `scripts/cv-tailor.mjs` generates separate `generated/roles/<role-slug>/cv.md` and `cv.json` outputs for a specific role without overwriting the master
 - `article-digest.md` has detailed proof points (optional)
 - **NEVER hardcode metrics** -- read them from these files at evaluation time
+
+### Role-Specific CV Workflow
+
+- Use the master `cv.md` plus `data/experience-bank.md` to generate role-specific CV variants.
+- Treat the generated role CV as a derived artifact for a specific job family, not as the new master profile.
+- Preserve the master CV for evaluation, comparison, and future tailoring.
+- When tailoring, keep wording credible and specific to the role, but do not invent experience or promote adjacent exposure into direct ownership.
+- If the experience bank is sparse or does not yield usable sections yet, fall back to master CV proof points rather than failing the role CV generation.
+
+**Workspace boundary:**
+Every call to `scripts/cv-tailor.mjs` produces one role deliverable in `generated/roles/<slug>/`:
+1. `cv.md` — human-readable normalized markdown
+
+Career-Ops does not generate JSON, normalized markdown mirrors, RenderCV YAML, previews, or PDFs. For those artifacts, switch to the sibling `rendercv-theme-lab` workspace and pass it the generated `cv.md`.
+
+**ATS / human-readable balance:**
+- Visible layer: Core Competencies, experience bullets, Projects, Skills, and Languages.
+- Do not keyword dump page 1 or add unsupported skills. Keep ATS coverage through truthful, visible wording first.
+- Hidden ATS appendix experiments are disabled by default and belong only in `rendercv-theme-lab` via its explicit `--ats-appendix` flag.
+- The master `cv.md` does **not** contain a `## Skills and Keyword Bank` section — role-relevant terms are selected during tailoring and rendering.
+
+If the user asks for PDF output from a tailored role CV, first generate `generated/roles/<slug>/cv.md` here, then run the RenderCV pipeline from `../rendercv-theme-lab`.
+
+### CV and Assessment Decision Rules
+
+- Classify the role before writing: function, level, orientation, scope, environment, and value mode.
+- Use the strongest evidence class available for that role: direct experience first, adjacent experience second, projects and certifications third, keywords only if they are already backed by evidence.
+- Universal rules apply to every CV: finished page 1, no pasted-note artifacts, no duplicate claims, concise bullets, outcome-led language, defensible claims, and consistent formatting.
+- Conditional emphasis depends on the role:
+  - strategy or cross-functional roles -> target-state design, operating model, decision frameworks, roadmap ownership, and alignment
+  - product roles -> prioritization, adoption, trade-offs, user value, and roadmap decisions
+  - operations roles -> throughput, controls, handoffs, planning, and risk reduction
+  - quality or compliance roles -> governance, validation, controls, inspection readiness, and remediation
+  - technical, data, or platform roles -> architecture, integration, data quality, information flow, analytics, and debugging
+- Section purpose must stay distinct: summary = positioning, core areas = keyword scan, experience = proof, projects = supporting edge, domains and systems = context fit.
+- Do not repeat the same claim in summary, expertise, and experience. Compress or remove overlap.
+- Do not keyword dump page 1, invent experience, or overfit the CV so hard that the master profile becomes misleading.
+- Experience entry structure: each role should open with a one-sentence scope summary before the highlights bullets. The summary answers what the job was, the scale, and the business context — not a restatement of what the bullets say. Use the `summary` field in the RenderCV YAML experience entry and a plain sentence line in cv.md between the date and the first bullet. One sentence only. Two or more lines creates redundancy with the bullets and wastes space.
 
 ---
 

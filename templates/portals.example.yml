@@ -15,6 +15,30 @@
 #   4. Adjust search_queries for your preferred job boards
 #   5. Set enabled: false on companies you don't care about
 
+# -- Assisted apply metadata --
+# Optional, but required for portal-aware application automation.
+# Keep portal metadata separate from job routing metadata.
+#
+# apply:
+#   portals:
+#     - portal_id: takeda-workday
+#       ats_type: workday
+#       login_entry_url: https://takeda.wd3.myworkdayjobs.com/en-US/TakedaCareers/login
+#       profile_url: https://takeda.wd3.myworkdayjobs.com/en-US/TakedaCareers/userHome
+#       status_page_url: https://takeda.wd3.myworkdayjobs.com/en-US/TakedaCareers/userHome/applications
+#       job_apply_entry_mode: role_page_click
+#       requires_account_before_form: true
+#       supports_resume_autofill: true
+#       supports_guest_apply: false
+#       session_storage_key: takeda-workday-pravin
+#
+#   jobs:
+#     - company: Takeda
+#       job_url: https://www.takeda.com/careers/job/example
+#       apply_url: https://takeda.wd3.myworkdayjobs.com/en-US/TakedaCareers/job/example/apply
+#       portal_id: takeda-workday
+#       routing_mode: role_page_click
+
 # -- Title filter --
 # The scanner uses these keywords to decide if a title is relevant.
 # At least 1 positive must match AND 0 negatives must match (case-insensitive).

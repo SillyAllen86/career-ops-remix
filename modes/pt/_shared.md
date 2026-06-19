@@ -215,4 +215,4 @@ Em vagas e negociacoes brasileiras, existem termos e praticas que nao aparecem n
 | Read | cv.md, _profile.md, article-digest.md, cv-template.html |
 | Write | HTML temporario para PDF, applications.md, reports .md |
 | Edit | Atualizar tracker |
-| Bash | `node generate-pdf.mjs` |
+| Bash | `scripts/cv-tailor.mjs` e comandos de verificacao do pipeline |

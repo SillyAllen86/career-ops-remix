@@ -1,4 +1,4 @@
-# Modo: pdf — Generación de PDF ATS-Optimizado
+# Modo: pdf — CV por rol y entrega a RenderCV
 
 ## Pipeline completo
 
@@ -9,17 +9,33 @@
 5. Detecta ubicación empresa → formato papel:
    - US/Canada → `letter`
    - Resto del mundo → `a4`
-6. Detecta arquetipo del rol → adapta framing
-7. Reescribe Professional Summary inyectando keywords del JD + exit narrative bridge ("Built and sold a business. Now applying systems thinking to [domain del JD].")
-8. Selecciona top 3-4 proyectos más relevantes para la oferta
-9. Reordena bullets de experiencia por relevancia al JD
-10. Construye competency grid desde requisitos del JD (6-8 keyword phrases)
-11. Inyecta keywords naturalmente en logros existentes (NUNCA inventa)
-12. Genera HTML completo desde template + contenido personalizado
-13. Lee `name` de `config/profile.yml` → normaliza a kebab-case lowercase (e.g. "John Doe" → "john-doe") → `{candidate}`
-14. Escribe HTML a `/tmp/cv-{candidate}-{company}.html`
-15. Ejecuta: `node generate-pdf.mjs /tmp/cv-{candidate}-{company}.html output/cv-{candidate}-{company}-{YYYY-MM-DD}.pdf --format={letter|a4}`
-15. Reporta: ruta del PDF, nº páginas, % cobertura de keywords
+6. Detecta arquetipo del rol y clasifica la oferta por funcion, seniority, orientation, scope, environment y value mode.
+7. Reescribe Professional Summary con keywords del JD y una breve puente narrativa solo si esta respaldada por la evidencia disponible.
+8. Selecciona top 3-4 proyectos mas relevantes para la oferta.
+9. Reordena y de-duplica bullets de experiencia por relevancia al JD.
+10. Construye competency grid desde requisitos del JD (6-8 keyword phrases) sin meter ruido ni claims repetidos.
+11. Inyecta keywords naturalmente en logros existentes (NUNCA inventa).
+12. Ejecuta `scripts/cv-tailor.mjs --role="{role}" --focus="{keywords}"` → genera:
+    - `generated/roles/<slug>/cv.md` (markdown legible para humanos)
+13. Cambia al workspace hermano `../rendercv-theme-lab`
+14. Ejecuta `node scripts/cv-role-export.mjs --input=../career-ops/generated/roles/<slug>/cv.md --theme=labtheme`
+15. Ejecuta `node scripts/cv-rendercv.mjs --input=generated/roles/<slug>/cv.json --theme=labtheme`
+16. Reporta: ruta del `cv.md` generado y los artefactos RenderCV producidos en `rendercv-theme-lab`
+
+**Nota sobre capas ATS:** Career-Ops no genera capas ATS ocultas. En `rendercv-theme-lab`, el apéndice ATS oculto es experimental y está desactivado por defecto; habilítalo solo explícitamente con `--ats-appendix`.
+
+## Decision rules for tailored CVs
+
+- Universal rules always apply: finished page 1, clean structure, no rough-note artifacts, no duplicated claims, concise bullets, outcome-led language, defensible claims, and consistent formatting.
+- Conditional emphasis depends on the role:
+  - strategy or cross-functional roles -> target-state design, operating model, decision frameworks, roadmap ownership, and alignment
+  - product roles -> prioritization, adoption, trade-offs, user value, and roadmap decisions
+  - operations roles -> throughput, controls, handoffs, planning, and risk reduction
+  - quality or compliance roles -> governance, validation, controls, inspection readiness, and remediation
+  - technical, data, or platform roles -> architecture, integration, data quality, information flow, analytics, and debugging
+- Section purpose stays distinct: summary = positioning, core competencies = keyword scan, work experience = proof, projects = supporting edge, skills = compact scan support.
+- Do not repeat the same claim in summary, competencies, and experience.
+- Do not keyword dump page 1 or use architecture/platform language unless it is supported by the CV and relevant to the role.
 
 ## Reglas ATS (parseo limpio)
 

@@ -5,16 +5,25 @@
   "scripts": {
     "doctor": "node doctor.mjs",
     "verify": "node verify-pipeline.mjs",
+    "profile:list": "node scripts/profile-manager.mjs list",
+    "profile:init": "node scripts/profile-manager.mjs init",
+    "profile:capture": "node scripts/profile-manager.mjs capture",
+    "profile:activate": "node scripts/profile-manager.mjs activate",
+    "cv:validate": "node scripts/cv-build.mjs",
+    "cv:tailor": "node scripts/cv-tailor.mjs",
+    "cv:editorial-test": "node scripts/cv-editorial-test.mjs",
+    "cv:mapping-test": "node scripts/cv-mapping-test.mjs",
     "normalize": "node normalize-statuses.mjs",
     "dedup": "node dedup-tracker.mjs",
     "merge": "node merge-tracker.mjs",
-    "pdf": "node generate-pdf.mjs",
     "sync-check": "node cv-sync-check.mjs",
     "update:check": "node update-system.mjs check",
     "update": "node update-system.mjs apply",
     "rollback": "node update-system.mjs rollback",
     "liveness": "node check-liveness.mjs",
-    "scan": "node scan.mjs"
+    "scan": "node scan.mjs",
+    "apply:assist": "node apply-assist.mjs",
+    "status:sync": "node status-sync.mjs"
   },
   "keywords": [
     "ai",

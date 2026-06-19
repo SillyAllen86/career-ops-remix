@@ -1,0 +1,40 @@
+candidate:
+  full_name: "Sister"
+  email: ""
+  phone: ""
+  location: ""
+  linkedin: ""
+  portfolio_url: ""
+  github: ""
+  twitter: ""
+
+target_roles:
+  primary:
+    - ""
+  archetypes:
+    - name: ""
+      level: ""
+      fit: "primary"
+
+narrative:
+  headline: ""
+  exit_story: ""
+  superpowers:
+    - ""
+  proof_points:
+    - name: ""
+      url: ""
+      hero_metric: ""
+
+compensation:
+  target_range: "TBD"
+  currency: "EUR"
+  minimum: "TBD"
+  location_flexibility: ""
+
+location:
+  country: ""
+  city: ""
+  timezone: ""
+  visa_status: ""
+  onsite_availability: ""

@@ -35,9 +35,26 @@ const FETCH_TIMEOUT_MS = 10_000;
 // ── API detection ───────────────────────────────────────────────────
 
 function detectApi(company) {
+  // Explicit provider hint wins when present.
+  if (company.api_provider === 'greenhouse' && company.api) {
+    return { type: 'greenhouse', url: company.api };
+  }
+  if (company.api_provider === 'ashby' && company.api) {
+    return { type: 'ashby', url: company.api };
+  }
+  if (company.api_provider === 'lever' && company.api) {
+    return { type: 'lever', url: company.api };
+  }
+  if (company.api_provider === 'workday' && company.api) {
+    return { type: 'workday', url: company.api };
+  }
+
   // Greenhouse: explicit api field
   if (company.api && company.api.includes('greenhouse')) {
     return { type: 'greenhouse', url: company.api };
+  }
+  if (company.api && company.api.includes('/wday/cxs/')) {
+    return { type: 'workday', url: company.api };
   }
 
   const url = company.careers_url || '';
@@ -74,50 +91,127 @@ function detectApi(company) {
 
 // ── API parsers ─────────────────────────────────────────────────────
 
-function parseGreenhouse(json, companyName) {
+function parseGreenhouse(json, company) {
   const jobs = json.jobs || [];
   return jobs.map(j => ({
     title: j.title || '',
     url: j.absolute_url || '',
-    company: companyName,
+    company: company.name,
     location: j.location?.name || '',
   }));
 }
 
-function parseAshby(json, companyName) {
+function parseAshby(json, company) {
   const jobs = json.jobs || [];
   return jobs.map(j => ({
     title: j.title || '',
     url: j.jobUrl || '',
-    company: companyName,
+    company: company.name,
     location: j.location || '',
   }));
 }
 
-function parseLever(json, companyName) {
+function parseLever(json, company) {
   if (!Array.isArray(json)) return [];
   return json.map(j => ({
     title: j.text || '',
     url: j.hostedUrl || '',
-    company: companyName,
+    company: company.name,
     location: j.categories?.location || '',
   }));
 }
 
-const PARSERS = { greenhouse: parseGreenhouse, ashby: parseAshby, lever: parseLever };
+function buildWorkdayJobUrl(company, posting) {
+  const careersUrl = company.careers_url || '';
+  const externalPath = posting.externalPath || posting.externalUrl || posting.externalURL || '';
+
+  if (!careersUrl) return externalPath || '';
+  if (!externalPath) return careersUrl;
+  if (/^https?:\/\//i.test(externalPath)) return externalPath;
+
+  try {
+    const base = new URL(careersUrl);
+    const basePath = base.pathname.endsWith('/') ? base.pathname.slice(0, -1) : base.pathname;
+    const normalizedPath = externalPath.startsWith('/') ? externalPath : `/${externalPath}`;
+
+    if (normalizedPath.startsWith(`${basePath}/`)) {
+      return `${base.origin}${normalizedPath}`;
+    }
+    if (normalizedPath.startsWith('/job/')) {
+      return `${base.origin}${basePath}${normalizedPath}`;
+    }
+    return `${base.origin}${normalizedPath}`;
+  } catch {
+    return externalPath;
+  }
+}
+
+function parseWorkday(json, company) {
+  const jobs = json.jobPostings || json.jobs || [];
+  return jobs.map(j => ({
+    title: j.title || '',
+    url: buildWorkdayJobUrl(company, j),
+    company: company.name,
+    location: j.locationsText || j.location || (Array.isArray(j.bulletFields) ? j.bulletFields.join(' | ') : ''),
+  }));
+}
+
+const PARSERS = { greenhouse: parseGreenhouse, ashby: parseAshby, lever: parseLever, workday: parseWorkday };
 
 // ── Fetch with timeout ──────────────────────────────────────────────
 
-async function fetchJson(url) {
+async function fetchJson(url, init = {}) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
   try {
-    const res = await fetch(url, { signal: controller.signal });
+    const res = await fetch(url, { ...init, signal: controller.signal });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return await res.json();
   } finally {
     clearTimeout(timer);
   }
+}
+
+async function fetchApi(api) {
+  if (api.type !== 'workday') {
+    return fetchJson(api.url);
+  }
+
+  const limit = 20;
+  const jobPostings = [];
+  let offset = 0;
+
+  while (true) {
+    const payload = {
+      appliedFacets: {},
+      limit,
+      offset,
+      searchText: '',
+    };
+    const json = await fetchJson(api.url, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const batch = Array.isArray(json.jobPostings)
+      ? json.jobPostings
+      : Array.isArray(json.jobs)
+        ? json.jobs
+        : [];
+
+    jobPostings.push(...batch);
+
+    const total = json.total || json.totalCount || null;
+    if (batch.length < limit) break;
+    offset += batch.length;
+    if (total !== null && offset >= total) break;
+  }
+
+  return { jobPostings };
 }
 
 // ── Title filter ────────────────────────────────────────────────────
@@ -292,8 +386,8 @@ async function main() {
   const tasks = targets.map(company => async () => {
     const { type, url } = company._api;
     try {
-      const json = await fetchJson(url);
-      const jobs = PARSERS[type](json, company.name);
+      const json = await fetchApi(company._api);
+      const jobs = PARSERS[type](json, company);
       totalFound += jobs.length;
 
       for (const job of jobs) {

@@ -62,6 +62,7 @@ CAREER_OPS_PROVIDER=codex npm run doctor
 ## Behavioral rules
 
 - Treat raw JD text or a job URL as the full auto-pipeline path unless the user asks for evaluation only
+- For both evaluation and CV tailoring, follow the reusable decision rules in `CAREER_OPS_AGENT.md`: classify the role first, choose evidence by hierarchy, and avoid repeating the same claim across sections.
 - Keep personalization in `config/profile.yml`, `modes/_profile.md`, `article-digest.md`, or `portals.yml`
 - Never rely on generic web fetch alone when browser automation is available for job verification
 - Never submit an application for the user

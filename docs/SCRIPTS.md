@@ -11,13 +11,17 @@ All scripts live in the project root as `.mjs` modules and are exposed via `npm 
 | `npm run normalize` | `normalize-statuses.mjs` | Fix non-canonical statuses |
 | `npm run dedup` | `dedup-tracker.mjs` | Remove duplicate tracker entries |
 | `npm run merge` | `merge-tracker.mjs` | Merge batch TSVs into applications.md |
-| `npm run pdf` | `generate-pdf.mjs` | Convert HTML to ATS-optimized PDF |
+| `npm run cv:validate` | `scripts/cv-build.mjs` | Validate the master `cv.md` without writing render artifacts |
+| `npm run cv:mapping-test` | `scripts/cv-mapping-test.mjs` | Verify round-trip markdown -> JSON -> markdown mapping |
+| `npm run cv:tailor` | `scripts/cv-tailor.mjs` | Generate a role-specific `cv.md` from the master CV and experience bank |
 | `npm run sync-check` | `cv-sync-check.mjs` | Validate CV/profile consistency |
 | `npm run update:check` | `update-system.mjs check` | Check for upstream updates |
 | `npm run update` | `update-system.mjs apply` | Apply upstream update |
 | `npm run rollback` | `update-system.mjs rollback` | Rollback last update |
 | `npm run liveness` | `check-liveness.mjs` | Test if job URLs are still active |
 | `npm run scan` | `scan.mjs` | Zero-token portal scanner |
+| `npm run apply:assist` | `apply-assist.mjs` | Portal-aware assisted apply runner |
+| `npm run status:sync` | `status-sync.mjs` | Authenticated portal status sync (proposal-only) |
 
 ---
 
@@ -91,17 +95,37 @@ Processed TSVs are moved to `batch/tracker-additions/merged/`.
 
 ---
 
-## pdf
+## cv:validate
 
-Renders an HTML file to a print-quality, ATS-parseable PDF via headless Chromium. Resolves font paths from `fonts/`, normalizes Unicode for ATS compatibility (em-dashes, smart quotes, zero-width characters), and reports page count and file size.
+Parses `cv.md`, validates it against the checked-in schema in `schemas/cv.schema.json`, and runs the editorial lint pass. It does not write JSON, normalized markdown, HTML, YAML, or PDF artifacts.
 
 ```bash
-npm run pdf -- input.html output.pdf
-npm run pdf -- input.html output.pdf --format=letter   # US letter
-npm run pdf -- input.html output.pdf --format=a4        # A4 (default)
+npm run cv:validate
+npm run cv:mapping-test
 ```
 
-**Exit codes:** `0` PDF generated, `1` missing arguments or generation failure.
+**Exit codes:** `0` on success, `1` if the source CV cannot be parsed or validated.
+
+## cv:tailor
+
+Generates a role-specific `cv.md` from the master `cv.md` plus `data/experience-bank.md`, without modifying the master CV. The tailorer classifies the role first, then applies the shared evidence hierarchy, section-purpose rules, and anti-duplication logic before writing the derived artifact.
+
+Every successful non-dry-run writes exactly one role deliverable under `generated/roles/<role-slug>/`:
+- `cv.md` — role-specific normalized markdown
+
+```bash
+npm run cv:tailor -- --role="Senior Enterprise Architect" --focus="SAP integration, target-state architecture"
+npm run cv:tailor -- --role="Product Strategy Lead" --output=generated/roles/product-strategy/cv.md
+```
+
+**Flags:**
+- `--dry-run` — parse and validate without writing the role `cv.md`
+
+**Exit codes:** `0` on success, `1` if the source CV or experience bank cannot be parsed or validated.
+
+If the experience bank does not yield usable sections, the tailorer falls back to master CV proof points so the role CV still validates instead of failing on an empty strategic section.
+
+JSON, normalized markdown, RenderCV YAML, preview, and PDF are intentionally outside this workspace. Use the sibling `rendercv-theme-lab` workspace for those artifacts.
 
 ---
 
@@ -187,3 +211,33 @@ npm run scan
 ```
 
 **Exit codes:** `0` scan completed, `1` configuration error or no portals.yml found.
+
+---
+
+## apply:assist
+
+Portal-aware assisted application runner. Uses `apply.portals` and `apply.jobs` metadata inside `portals.yml`, launches a persistent local Playwright profile under `runtime/sessions/`, writes JSONL run logs plus screenshots/HTML under `runtime/runs/`, and stops at the first legitimate manual checkpoint or final review.
+
+```bash
+npm run apply:assist -- --portal-id takeda-workday --job-url https://example.com/job --mode fill_until_review
+```
+
+Supported safe modes:
+
+- `inspect_only`
+- `fill_until_manual_checkpoint`
+- `fill_until_review`
+
+`never_submit` is on by default. The runner will not click a final submit control.
+
+---
+
+## status:sync
+
+Authenticated portal status sync using saved local sessions from the assisted-apply flow. Opens portal application dashboards, reads visible statuses, maps them to tracker rows, and prints proposed updates without writing `data/applications.md`.
+
+```bash
+npm run status:sync -- --portal-id takeda-workday
+```
+
+This is intentionally separate from the apply runner.

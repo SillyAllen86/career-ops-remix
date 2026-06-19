@@ -7,6 +7,21 @@ Modo interactivo para cuando el candidato está rellenando un formulario de apli
 - **Mejor con Playwright visible**: En modo visible, el candidato ve el navegador y Claude puede interactuar con la página.
 - **Sin Playwright**: el candidato comparte un screenshot o pega las preguntas manualmente.
 
+## Arquitectura segura
+
+El flujo de apply ya no debe basarse en probes genéricos del portal. La arquitectura correcta separa:
+
+1. acceso al portal + sesión persistente local
+2. automatización del apply
+3. sync de estado de aplicaciones
+
+Comportamiento seguro por defecto:
+
+- parar en checkpoint manual o en review final
+- no enviar la aplicación automáticamente
+- no saltarse MFA, CAPTCHA, email verification, salary input, work authorization, notice period o relocation
+- guardar logs estructurados, screenshots y snapshots HTML en local para depuración
+
 ## Workflow
 
 ```

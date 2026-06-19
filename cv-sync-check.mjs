@@ -6,13 +6,17 @@
  * Checks:
  * 1. cv.md exists
  * 2. config/profile.yml exists and has required fields
- * 3. No hardcoded metrics in _shared.md or batch/batch-prompt.md
- * 4. article-digest.md freshness (if exists)
+ * 3. cv.md can be compiled to validated JSON
+ * 4. Generated JSON/markdown mirrors are in sync when present
+ * 5. No hardcoded metrics in _shared.md or batch/batch-prompt.md
+ * 6. article-digest.md freshness (if exists)
  */
 
 import { readFileSync, existsSync, statSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { parseCvMarkdown, renderNormalizedMarkdown } from './lib/cv/markdown.mjs';
+import { validateCvJson } from './lib/cv/validate.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const projectRoot = __dirname;
@@ -46,7 +50,41 @@ if (!existsSync(profilePath)) {
   }
 }
 
-// 3. Check for hardcoded metrics in prompt files
+// 3. Compile cv.md -> JSON and validate against schema
+const generatedJsonPath = join(projectRoot, 'generated', 'cv.json');
+const generatedMdPath = join(projectRoot, 'generated', 'cv.normalized.md');
+if (existsSync(cvPath)) {
+  const cvContent = readFileSync(cvPath, 'utf-8');
+  try {
+    const compiled = parseCvMarkdown(cvContent, {
+      sourcePath: 'cv.md',
+      lastModified: statSync(cvPath).mtime.toISOString(),
+    });
+    validateCvJson(compiled);
+
+    if (existsSync(generatedJsonPath)) {
+      const generatedContent = readFileSync(generatedJsonPath, 'utf-8');
+      const regenerated = `${JSON.stringify(compiled, null, 2)}\n`;
+      if (generatedContent !== regenerated) {
+        warnings.push('generated/cv.json exists but is out of sync with cv.md. Run `npm run cv:build`.');
+      }
+    } else {
+      warnings.push('generated/cv.json not found. Run `npm run cv:build` to create the machine-readable CV.');
+    }
+
+    if (existsSync(generatedMdPath)) {
+      const generatedMd = readFileSync(generatedMdPath, 'utf-8');
+      const regeneratedMd = `${renderNormalizedMarkdown(compiled)}\n`;
+      if (generatedMd !== regeneratedMd) {
+        warnings.push('generated/cv.normalized.md exists but is out of sync with cv.md. Run `npm run cv:build`.');
+      }
+    }
+  } catch (err) {
+    errors.push(`cv.md could not be compiled to valid JSON: ${err.message}`);
+  }
+}
+
+// 4. Check for hardcoded metrics in prompt files
 const filesToCheck = [
   { path: join(projectRoot, 'modes', '_shared.md'), name: '_shared.md' },
   { path: join(projectRoot, 'batch', 'batch-prompt.md'), name: 'batch-prompt.md' },
@@ -71,7 +109,7 @@ for (const { path, name } of filesToCheck) {
   }
 }
 
-// 4. Check article-digest.md freshness
+// 5. Check article-digest.md freshness
 const digestPath = join(projectRoot, 'article-digest.md');
 if (existsSync(digestPath)) {
   const stats = statSync(digestPath);

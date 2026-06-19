@@ -1,0 +1,64 @@
+candidate:
+  full_name: "Anushka Anil Sail"
+  email: "anushkasail55@gmail.com"
+  phone: "+44-7393240517"
+  location: "London, United Kingdom"
+  linkedin: "https://www.linkedin.com/in/anushka-sail-x000x/"
+  portfolio_url: ""
+  github: "Not provided"
+  twitter: ""
+
+target_roles:
+  primary:
+    - "Intellectual Property Paralegal"
+    - "Legal Researcher"
+    - "Trainee Solicitor / Legal Intern"
+  archetypes:
+    - name: "Intellectual Property Paralegal"
+      level: "Entry Level / Early Career"
+      fit: "primary"
+    - name: "Legal Researcher"
+      level: "Entry Level / Early Career"
+      fit: "primary"
+    - name: "Trainee Solicitor / Legal Intern"
+      level: "Entry Level / Early Career"
+      fit: "secondary"
+    - name: "Data Privacy / Regulatory Research Assistant"
+      level: "Entry Level / Early Career"
+      fit: "secondary"
+    - name: "Commercial Litigation / Disputes Paralegal"
+      level: "Entry Level / Early Career"
+      fit: "adjacent"
+
+narrative:
+  headline: "LLM candidate focused on intellectual property, legal research, and drafting across civil, commercial, and regulatory matters"
+  exit_story: "LLM candidate at University College London with prior legal training in India and internship experience across intellectual property, civil litigation, commercial matters, corporate transactions, and regulatory research. Brings strong legal research, case law analysis, policy interpretation, and drafting capability, supported by published writing in intellectual property and related legal topics."
+  superpowers:
+    - "Legal research and case law analysis"
+    - "Drafting representations, replies, briefs, and litigation support materials"
+    - "Intellectual property law research across patents, trademarks, and copyright"
+    - "Policy and regulatory analysis across civil, commercial, and public law topics"
+    - "Clear legal writing backed by publication experience"
+  proof_points:
+    - name: "UCL LLM scholarship"
+      url: ""
+      hero_metric: "Awarded a 50% scholarship for the LLM at University College London"
+    - name: "Published legal writing in intellectual property"
+      url: "https://www.ssrn.com/"
+      hero_metric: "Published multiple articles on patents, ChatGPT and intellectual property, maritime disputes, and related legal issues"
+    - name: "Saikrishna & Associates IP internship"
+      url: ""
+      hero_metric: "Researched patents, trademarks, and copyright matters and drafted representations, replies, and appeals"
+
+compensation:
+  target_range: "TBD"
+  currency: "GBP"
+  minimum: "TBD"
+  location_flexibility: "Based in London and open to legal roles in London, across the UK, or remote where appropriate."
+
+location:
+  country: "United Kingdom"
+  city: "London"
+  timezone: "Europe/London"
+  visa_status: "TBD"
+  onsite_availability: "Available for in-person, hybrid, or remote legal work depending on role requirements"

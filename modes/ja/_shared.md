@@ -221,4 +221,4 @@ skill はすべてのターゲット求人を同等の注意で扱う。プラ�
 | Read | cv.md、_profile.md、article-digest.md、cv-template.html |
 | Write | PDF 用の一時 HTML、applications.md、reports .md |
 | Edit | tracker の更新 |
-| Bash | `node generate-pdf.mjs` |
+| Bash | `scripts/cv-tailor.mjs` とパイプライン検証コマンド |

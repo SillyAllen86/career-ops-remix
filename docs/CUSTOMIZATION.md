@@ -11,6 +11,20 @@ Key sections:
 - **compensation**: Target range, minimum, currency
 - **location**: Country, timezone, visa status, on-site availability
 
+## Multiple People In One Workspace
+
+The core system is single-candidate at runtime because scripts read fixed paths such as `cv.md` and `config/profile.yml`.
+
+If you want to use the same workspace for more than one person, use profile packs under `profiles/` and switch the active candidate when needed:
+
+```bash
+node scripts/profile-manager.mjs capture pravin
+node scripts/profile-manager.mjs init sister
+node scripts/profile-manager.mjs activate sister
+```
+
+That keeps each person's `cv.md` and `profile.yml` separate while preserving compatibility with the existing scripts and agent instructions.
+
 ## Target Roles (modes/_profile.md)
 
 The archetype table in `_profile.md` determines how offers are scored and CVs are framed. Edit the table to match YOUR career targets:
@@ -33,14 +47,9 @@ Copy from `templates/portals.example.yml` and customize:
 3. **search_queries**: WebSearch queries for job boards (Ashby, Greenhouse, Lever)
 4. **tracked_companies**: Companies to check directly
 
-## CV Template (templates/cv-template.html)
+## CV Rendering
 
-The HTML template uses these design tokens:
-- **Fonts**: Space Grotesk (headings) + DM Sans (body) -- self-hosted in `fonts/`
-- **Colors**: Cyan primary (`hsl(187,74%,32%)`) + Purple accent (`hsl(270,70%,45%)`)
-- **Layout**: Single-column, ATS-optimized
-
-To customize fonts/colors, edit the CSS in the template. Update font files in `fonts/` if switching fonts.
+Career-Ops owns role-specific `cv.md` generation only. Customize templates, fonts, colors, RenderCV YAML, preview, and PDF output in the sibling `rendercv-theme-lab` workspace.
 
 ## Negotiation Scripts (modes/_shared.md)
 

@@ -84,3 +84,12 @@ location:
   visa_status: "TBD"
   # For remote roles outside your country:
   onsite_availability: "Available for hybrid/on-site work in the Frankfurt area and planned travel for role-critical workshops, design sessions, or key delivery milestones"
+
+execution:
+  apply:
+    checkpoint_answers:
+      takeda:
+        salary_input:
+          amount: 130000
+          currency: "EUR"
+          period: "annual"
